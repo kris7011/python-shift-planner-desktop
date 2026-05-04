@@ -14,9 +14,9 @@ shifts = [
     Shift("2026-05-06", "Day", "CT"),
     Shift("2026-05-06", "Evening", "MR"),
     Shift("2026-05-07", "Day", "CT"),
-    Shift("2026-05-08", "Night", "MR"),
+    Shift("2026-05-08", "Night", "MR", priority=1),
     Shift("2026-05-09", "Day", "MR"),
-    Shift("2026-05-09", "Day", "UL"),
+    Shift("2026-05-09", "Day", "UL", priority=1),
 ]
 
 assigned = assign_shifts(employees, shifts)

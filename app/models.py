@@ -6,6 +6,9 @@ class Employee:
         self.max_shifts = max_shifts
         self.skills = skills
         self.assigned_shifts = []
+    
+    def __str__(self) -> str:
+        return self.name
 
     def can_take_shift(self, shift):
         has_capacity = self.has_capacity()
@@ -41,17 +44,17 @@ class Employee:
 
         return True
 
-
 class Shift:
-    def __init__(self, date, shift_type, required_skill, required_staff=1):
+    def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2):
         self.date = date
         self.shift_type = shift_type
         self.required_skill = required_skill
         self.required_staff = required_staff
+        self.priority = priority
         self.assigned_employees = []
     
     def __str__(self) -> str:
-        return f"{self.date} {self.shift_type} ({self.required_skill})"
+        return f"{self.date} {self.shift_type} ({self.required_skill}) [P{self.priority}]"
 
     @property
     def is_fully_staffed(self):

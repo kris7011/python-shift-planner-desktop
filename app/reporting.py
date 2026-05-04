@@ -3,7 +3,7 @@ from models import Employee, Shift
 def print_assigned_shifts(shifts: list[Shift]) -> None:
     for shift in shifts:
         if shift.assigned_employees:
-            names = ", ".join(e.name for e in shift.assigned_employees)
+            names = ", ".join(str(e) for e in shift.assigned_employees)
             print(f"{shift} -> {names}")
         else:
             print(f"{shift} -> No assignment")
@@ -11,8 +11,7 @@ def print_assigned_shifts(shifts: list[Shift]) -> None:
 def print_shift_summary(employees: list[Employee]) -> None:
     print("\nShift count:")
     for employee in employees:
-        print(f"{employee.name}: {len(employee.assigned_shifts)}")
-
+        print(f"{employee}: {len(employee.assigned_shifts)}")
 
 def print_unassigned_shifts(shifts: list[Shift]) -> None:
     unassigned = [s for s in shifts if not s.is_fully_staffed]
