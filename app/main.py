@@ -1,6 +1,6 @@
 from models import Employee, Shift
 from scheduler import assign_shifts
-from reporting import print_assigned_shifts, print_shift_summary, print_unassigned_shifts
+from reporting import print_assigned_shifts, print_shift_summary, print_unassigned_shifts, print_critical_unassigned_shifts
 
 employees = [
     Employee("Kris", 3, ["CT", "MR"]),
@@ -24,3 +24,4 @@ assigned = assign_shifts(employees, shifts)
 print_assigned_shifts(assigned)
 print_shift_summary(employees)
 print_unassigned_shifts(assigned)
+print_critical_unassigned_shifts(assigned)
