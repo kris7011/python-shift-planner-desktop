@@ -2,16 +2,19 @@ from models import Employee, Shift
 from scheduler import assign_shifts
 
 employees = [
-    Employee("Kris", 2, ["CT", "MR"]),
-    Employee("Anna", 2, ["CT"]),
-    Employee("Peter", 2, ["MR"]),
+    Employee("Kris", 3, ["CT", "MR"]),
+    Employee("Anna", 3, ["CT"]),
+    Employee("Peter", 3, ["MR"]),
 ]
 
 shifts = [
     Shift("2026-05-05", "Day", "CT"),
+    Shift("2026-05-05", "Evening", "MR"),
+    Shift("2026-05-06", "Day", "CT"),
     Shift("2026-05-06", "Evening", "MR"),
     Shift("2026-05-07", "Day", "CT"),
     Shift("2026-05-08", "Night", "MR"),
+    Shift("2026-05-09", "Day", "MR"),
     Shift("2026-05-09", "Day", "UL"),
 ]
 
