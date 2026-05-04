@@ -4,9 +4,9 @@ def print_assigned_shifts(shifts: list[Shift]) -> None:
     for shift in shifts:
         if shift.assigned_employees:
             names = ", ".join(e.name for e in shift.assigned_employees)
-            print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) -> {names}")
+            print(f"{shift} -> {names}")
         else:
-            print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) -> No assignment")
+            print(f"{shift} -> No assignment")
 
 def print_shift_summary(employees: list[Employee]) -> None:
     print("\nShift count:")
@@ -23,5 +23,4 @@ def print_unassigned_shifts(shifts: list[Shift]) -> None:
 
     print("\nUnassigned shifts:")
     for shift in unassigned:
-        print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) "
-            f"[mangler {shift.missing_staff_count}/{shift.required_staff}]")
+        print(f"{shift} [mangler {shift.missing_staff_count}/{shift.required_staff}]")
