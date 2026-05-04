@@ -1,4 +1,6 @@
-def assign_shifts(employees, shifts):
+from models import Employee, Shift
+
+def assign_shifts(employees: list[Employee], shifts: list[Shift]) -> list[Shift]:
     for shift in shifts:
         assigned = False
 

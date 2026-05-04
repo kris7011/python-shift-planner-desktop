@@ -1,5 +1,6 @@
 from models import Employee, Shift
 from scheduler import assign_shifts
+from reporting import print_assigned_shifts, print_shift_summary, print_unassigned_shifts
 
 employees = [
     Employee("Kris", 3, ["CT", "MR"]),
@@ -20,8 +21,6 @@ shifts = [
 
 assigned = assign_shifts(employees, shifts)
 
-for shift in assigned:
-    if shift.assigned_employee:
-        print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) -> {shift.assigned_employee.name}")
-    else:
-        print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) -> No assignment")
+print_assigned_shifts(assigned)
+print_shift_summary(employees)
+print_unassigned_shifts(assigned)
