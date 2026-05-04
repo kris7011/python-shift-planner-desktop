@@ -53,3 +53,7 @@ class Shift:
     @property
     def is_fully_staffed(self):
         return len(self.assigned_employees) >= self.required_staff
+    
+    @property
+    def missing_staff_count(self):
+        return self.required_staff - len(self.assigned_employees)

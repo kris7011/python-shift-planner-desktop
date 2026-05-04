@@ -23,6 +23,5 @@ def print_unassigned_shifts(shifts: list[Shift]) -> None:
 
     print("\nUnassigned shifts:")
     for shift in unassigned:
-        assigned_count = len(shift.assigned_employees)
         print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) "
-            f"[{assigned_count}/{shift.required_staff} bemandet]")
+            f"[mangler {shift.missing_staff_count}/{shift.required_staff}]")
