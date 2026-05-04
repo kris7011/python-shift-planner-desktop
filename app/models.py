@@ -1,6 +1,5 @@
 import datetime
 
-
 class Employee:
     def __init__(self, name, max_shifts, skills):
         self.name = name
@@ -44,8 +43,13 @@ class Employee:
 
 
 class Shift:
-    def __init__(self, date, shift_type, required_skill):
+    def __init__(self, date, shift_type, required_skill, required_staff=1):
         self.date = date
         self.shift_type = shift_type
         self.required_skill = required_skill
-        self.assigned_employee = None
+        self.required_staff = required_staff
+        self.assigned_employees = []
+
+    @property
+    def is_fully_staffed(self):
+        return len(self.assigned_employees) >= self.required_staff

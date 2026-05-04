@@ -9,7 +9,7 @@ employees = [
 ]
 
 shifts = [
-    Shift("2026-05-05", "Day", "CT"),
+    Shift("2026-05-05", "Day", "CT", required_staff=2),
     Shift("2026-05-05", "Evening", "MR"),
     Shift("2026-05-06", "Day", "CT"),
     Shift("2026-05-06", "Evening", "MR"),

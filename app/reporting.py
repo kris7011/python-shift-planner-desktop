@@ -2,8 +2,9 @@ from models import Employee, Shift
 
 def print_assigned_shifts(shifts: list[Shift]) -> None:
     for shift in shifts:
-        if shift.assigned_employee:
-            print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) -> {shift.assigned_employee.name}")
+        if shift.assigned_employees:
+            names = ", ".join(e.name for e in shift.assigned_employees)
+            print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) -> {names}")
         else:
             print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) -> No assignment")
 
@@ -14,7 +15,7 @@ def print_shift_summary(employees: list[Employee]) -> None:
 
 
 def print_unassigned_shifts(shifts: list[Shift]) -> None:
-    unassigned = [s for s in shifts if s.assigned_employee is None]
+    unassigned = [s for s in shifts if not s.is_fully_staffed]
 
     if not unassigned:
         print("\nAll shifts assigned")
@@ -22,4 +23,6 @@ def print_unassigned_shifts(shifts: list[Shift]) -> None:
 
     print("\nUnassigned shifts:")
     for shift in unassigned:
-        print(f"{shift.date} {shift.shift_type} ({shift.required_skill})")
+        assigned_count = len(shift.assigned_employees)
+        print(f"{shift.date} {shift.shift_type} ({shift.required_skill}) "
+            f"[{assigned_count}/{shift.required_staff} bemandet]")
