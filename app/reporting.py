@@ -57,9 +57,9 @@ def print_employees_at_capacity(employees: list[Employee]) -> None:
         max_shifts = employee.max_shifts
         print(f"{employee} - {assigned}/{max_shifts}")
 
-def print_overloaded_employees(employees: list[Employee]) -> None:
+def print_overloaded_employees(employees: list[Employee], threshold: float = 0.8) -> None:
     # Filter employees with a workload_ratio of 0.8 (80%) or above
-    overloaded_employees = [e for e in employees if e.workload_ratio >= 0.8]
+    overloaded_employees = [e for e in employees if e.workload_ratio >= threshold]
     
     if not overloaded_employees:
         print("\nNo high workload employees")
