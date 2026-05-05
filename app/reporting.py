@@ -11,7 +11,7 @@ def print_assigned_shifts(shifts: list[Shift]) -> None:
 def print_shift_summary(employees: list[Employee]) -> None:
     print("\nShift count:")
     for employee in employees:
-        print(f"{employee}: {len(employee.assigned_shifts)}")
+        print(f"{employee}: {employee.assigned_shift_count}")
 
 def print_unassigned_shifts(shifts: list[Shift]) -> None:
     unassigned = [s for s in shifts if not s.is_fully_staffed]
@@ -40,12 +40,12 @@ def print_employee_details(employees: list[Employee]) -> None:
     
     for employee in employees:
         skills = ", ".join(employee.skills)
-        assigned_shifts = len(employee.assigned_shifts)
+        assigned_shifts = employee.assigned_shift_count
         max_shifts = employee.max_shifts
         print(f"{employee} - skills: {skills} - shifts: {assigned_shifts}/{max_shifts}")
         
 def print_employees_at_capacity(employees: list[Employee]) -> None:
-    at_capacity = [e for e in employees if len(e.assigned_shifts) == e.max_shifts]
+    at_capacity = [e for e in employees if e.assigned_shift_count == e.max_shifts]
     
     if not at_capacity:
         print("\nNo employees at capacity")
@@ -53,6 +53,6 @@ def print_employees_at_capacity(employees: list[Employee]) -> None:
     
     print("\nEmployees at capacity:")
     for employee in at_capacity:
-        assigned = len(employee.assigned_shifts)
+        assigned = employee.assigned_shift_count
         max_s = employee.max_shifts
         print(f"{employee} - {assigned}/{max_s}")

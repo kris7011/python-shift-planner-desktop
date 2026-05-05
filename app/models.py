@@ -43,7 +43,11 @@ class Employee:
                 return False
 
         return True
-
+    
+    @property
+    def assigned_shift_count(self):
+        return len(self.assigned_shifts)
+    
 class Shift:
     def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2):
         self.date = date
