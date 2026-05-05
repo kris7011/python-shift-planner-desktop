@@ -87,3 +87,17 @@ def print_average_workload_score(employees: list[Employee]) -> None:
     print("\nAverage workload score:")
     for employee in employees:
         print(f"{employee} - {employee.total_workload_score} / {employee.assigned_shift_count} = {employee.average_workload_score:.1f}")
+        
+def print_average_workload_ranking(employees: list[Employee]) -> None:
+    print("\nAverage workload ranking:")
+    
+    # Sort employees by their average_workload_score property
+    # reverse=True ensures that the highest score comes first
+    sorted_employees = sorted(
+        employees, 
+        key=lambda e: e.average_workload_score, 
+        reverse=True
+    )
+    
+    for employee in sorted_employees:
+        print(f"{employee} - {employee.average_workload_score:.1f}")
