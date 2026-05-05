@@ -4,7 +4,14 @@ def assign_shifts(employees: list[Employee], shifts: list[Shift]) -> list[Shift]
     sorted_shifts = sorted(shifts, key=lambda s: s.priority)
     
     for shift in sorted_shifts:
-        sorted_employees = sorted(employees, key=lambda e: len(e.assigned_shifts))
+        sorted_employees = sorted(
+            employees,
+            key=lambda e: (
+                e.total_workload_score,
+                e.assigned_shift_count,
+                len(e.skills)
+            )
+        )
 
         for employee in sorted_employees:
             if shift.is_fully_staffed:
