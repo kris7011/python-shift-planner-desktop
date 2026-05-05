@@ -9,6 +9,14 @@ class Employee:
     
     def __str__(self) -> str:
         return self.name
+    
+    @property
+    def assigned_shift_count(self):
+        return len(self.assigned_shifts)
+    
+    @property
+    def is_at_capacity(self):
+        return self.assigned_shift_count >= self.max_shifts
 
     def can_take_shift(self, shift):
         has_capacity = self.has_capacity()
@@ -43,10 +51,6 @@ class Employee:
                 return False
 
         return True
-    
-    @property
-    def assigned_shift_count(self):
-        return len(self.assigned_shifts)
     
 class Shift:
     def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2):
