@@ -101,3 +101,32 @@ def print_average_workload_ranking(employees: list[Employee]) -> None:
     
     for employee in sorted_employees:
         print(f"{employee} - {employee.average_workload_score:.1f}")
+        
+def print_risk_report(employees: list[Employee]) -> None:
+    print("\n" + "="*30)
+    print("      EMPLOYEE RISK REPORT")
+    print("="*30)
+    
+    at_risk = [
+        e for e in employees 
+        if e.is_at_capacity or e.workload_ratio >= 0.75 or e.average_workload_score >= 2.0
+    ]        
+    
+    if not at_risk:
+        print("No employees at risk.")
+        return
+    
+    for e in at_risk:
+        status_flags = []
+        
+        if e.is_at_capacity:
+            status_flags.append("AT CAPACITY")
+        if e.workload_ratio >= 0.75:
+            status_flags.append(f"HIGH RATIO ({int(e.workload_ratio*100)}%)")
+        if e.average_workload_score >= 2.0:
+            status_flags.append(f"HEAVY SHIFTS ({e.average_workload_score:.1f})")
+            
+        flags_str = " | ".join(status_flags)
+        print(f"{str(e):10} -> [ {flags_str} ]")
+    
+    print("="*30)
