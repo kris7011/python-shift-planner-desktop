@@ -8,7 +8,8 @@ from reporting import (
     print_employee_details,
     print_employees_at_capacity,
     print_overloaded_employees,
-    print_workload_score_report
+    print_workload_score_report,
+    print_average_workload_score
 )
 
 employees = load_employees_from_csv("data/employees.csv")
@@ -23,3 +24,4 @@ print_employee_details(employees)
 print_employees_at_capacity(employees)
 print_overloaded_employees(employees, threshold=0.75)
 print_workload_score_report(employees)
+print_average_workload_score(employees)
