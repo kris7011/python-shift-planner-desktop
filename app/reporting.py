@@ -56,3 +56,20 @@ def print_employees_at_capacity(employees: list[Employee]) -> None:
         assigned = employee.assigned_shift_count
         max_shifts = employee.max_shifts
         print(f"{employee} - {assigned}/{max_shifts}")
+
+def print_overloaded_employees(employees: list[Employee]) -> None:
+    # Filter employees with a workload_ratio of 0.8 (80%) or above
+    overloaded_employees = [e for e in employees if e.workload_ratio >= 0.8]
+    
+    if not overloaded_employees:
+        print("\nNo high workload employees")
+        return
+    
+    print("\nHigh workload employees:")
+    for employee in overloaded_employees:
+        assigned = employee.assigned_shift_count
+        max_shifts = employee.max_shifts
+        # Calculate percentage (e.g. 0.75 -> 75%)
+        percentage = int(employee.workload_ratio * 100)
+        
+        print(f"{employee} - {assigned}/{max_shifts} ({percentage}%)")

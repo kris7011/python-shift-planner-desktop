@@ -17,17 +17,24 @@ class Employee:
     @property
     def is_at_capacity(self):
         return self.assigned_shift_count >= self.max_shifts
+    
+    @property
+    def workload_ratio(self):
+        if self.max_shifts == 0:
+            return 0
+
+        return self.assigned_shift_count / self.max_shifts
 
     def can_take_shift(self, shift):
-        has_capacity = self.has_capacity()
-        has_skill = self.has_required_skill(shift)
-        has_no_shift_same_day = self.has_no_shift_same_day(shift)
-        has_rest_time = self.has_required_rest_time(shift)
-
-        return has_capacity and has_skill and has_no_shift_same_day and has_rest_time
+        return (
+            not self.is_at_capacity
+            and self.has_required_skill(shift)
+            and self.has_no_shift_same_day(shift)
+            and self.has_required_rest_time(shift)
+        )
     
     def has_capacity(self):
-        return len(self.assigned_shifts) < self.max_shifts
+        return not self.is_at_capacity
     
     def has_required_skill(self, shift):
         return shift.required_skill in self.skills
