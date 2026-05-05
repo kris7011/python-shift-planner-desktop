@@ -43,3 +43,16 @@ def print_employee_details(employees: list[Employee]) -> None:
         assigned_shifts = len(employee.assigned_shifts)
         max_shifts = employee.max_shifts
         print(f"{employee} - skills: {skills} - shifts: {assigned_shifts}/{max_shifts}")
+        
+def print_employees_at_capacity(employees: list[Employee]) -> None:
+    at_capacity = [e for e in employees if len(e.assigned_shifts) == e.max_shifts]
+    
+    if not at_capacity:
+        print("\nNo employees at capacity")
+        return
+    
+    print("\nEmployees at capacity:")
+    for employee in at_capacity:
+        assigned = len(employee.assigned_shifts)
+        max_s = employee.max_shifts
+        print(f"{employee} - {assigned}/{max_s}")

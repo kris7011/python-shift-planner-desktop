@@ -6,6 +6,7 @@ from reporting import (
     print_unassigned_shifts,
     print_critical_unassigned_shifts,
     print_employee_details,
+    print_employees_at_capacity,
 )
 
 employees = load_employees_from_csv("data/employees.csv")
@@ -17,3 +18,4 @@ print_shift_summary(employees)
 print_unassigned_shifts(assigned)
 print_critical_unassigned_shifts(assigned)
 print_employee_details(employees)
+print_employees_at_capacity(employees)
