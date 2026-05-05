@@ -85,14 +85,5 @@ def print_workload_score_report(employees: list[Employee]) -> None:
         
 def print_average_workload_score(employees: list[Employee]) -> None:
     print("\nAverage workload score:")
-    
     for employee in employees:
-        total_score = employee.total_workload_score
-        count = employee.assigned_shift_count
-        
-        # Handling 0 shifts to avoid ZeroDivisionError
-        if count > 0:
-            average = total_score / count
-            print(f"{employee} - {total_score} / {count} = {average:.1f}")
-        else:
-            print(f"{employee} - 0 / 0 = 0.0")        
+        print(f"{employee} - {employee.total_workload_score} / {employee.assigned_shift_count} = {employee.average_workload_score:.1f}")

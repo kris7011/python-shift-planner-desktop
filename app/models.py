@@ -28,6 +28,12 @@ class Employee:
     @property
     def total_workload_score(self) -> int:
         return sum(shift.workload_score for shift in self.assigned_shifts)
+    
+    @property
+    def average_workload_score(self) -> float:
+        if self.assigned_shift_count == 0:
+            return 0.0
+        return self.total_workload_score / self.assigned_shift_count
 
     def can_take_shift(self, shift):
         return (
