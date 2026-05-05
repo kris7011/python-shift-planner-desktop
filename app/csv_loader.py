@@ -25,6 +25,7 @@ def load_shifts_from_csv(file_path: str) -> list[Shift]:
             required_skill = row["required_skill"]
             required_staff = int(row["required_staff"])
             priority = int(row["priority"])
+            workload_score = int(row["workload_score"])
             
             shifts.append(
                 Shift(
@@ -33,6 +34,7 @@ def load_shifts_from_csv(file_path: str) -> list[Shift]:
                     required_skill=required_skill,
                     required_staff=required_staff,
                     priority=priority,
+                    workload_score=workload_score,
                 )
             )
     

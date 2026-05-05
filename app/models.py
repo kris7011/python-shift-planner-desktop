@@ -64,18 +64,14 @@ class Employee:
         return True
     
 class Shift:
-    def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2):
+    def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2, workload_score=1):
         self.date = date
         self.shift_type = shift_type
         self.required_skill = required_skill
         self.required_staff = required_staff
         self.priority = priority
+        self.workload_score = workload_score
         self.assigned_employees = []
-    
-    @property
-    def workload_score(self) -> int:
-        scores = {"Night": 3, "Evening": 2, "Day": 1}
-        return scores.get(self.shift_type, 1)
 
     def __str__(self) -> str:
         return f"{self.date} {self.shift_type} ({self.required_skill}) [P{self.priority}] [Score {self.workload_score}]"
