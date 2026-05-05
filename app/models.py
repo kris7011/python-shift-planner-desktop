@@ -26,10 +26,8 @@ class Employee:
         return self.assigned_shift_count / self.max_shifts
     
     @property
-    def total_workload_score(self):
-        scores = {"Night": 3, "Evening": 2, "Day": 1}
-        # Sum points for all assigned shifts (default 1 if type does not exist)
-        return sum(scores.get(shift.shift_type, 1) for shift in self.assigned_shifts)
+    def total_workload_score(self) -> int:
+        return sum(shift.workload_score for shift in self.assigned_shifts)
 
     def can_take_shift(self, shift):
         return (
@@ -74,6 +72,11 @@ class Shift:
         self.priority = priority
         self.assigned_employees = []
     
+    @property
+    def workload_score(self) -> int:
+        scores = {"Night": 3, "Evening": 2, "Day": 1}
+        return scores.get(self.shift_type, 1)
+
     def __str__(self) -> str:
         return f"{self.date} {self.shift_type} ({self.required_skill}) [P{self.priority}]"
 
