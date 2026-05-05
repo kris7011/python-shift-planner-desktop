@@ -34,3 +34,12 @@ def print_critical_unassigned_shifts(shifts: list[Shift]) -> None:
     print("\nCritical unassigned shifts:")
     for shift in critical:
         print(f"{shift} [mangler {shift.missing_staff_count}/{shift.required_staff}]")
+        
+def print_employee_details(employees: list[Employee]) -> None:
+    print("\nEmployee details:")
+    
+    for employee in employees:
+        skills = ", ".join(employee.skills)
+        assigned_shifts = len(employee.assigned_shifts)
+        max_shifts = employee.max_shifts
+        print(f"{employee} - skills: {skills} - shifts: {assigned_shifts}/{max_shifts}")
