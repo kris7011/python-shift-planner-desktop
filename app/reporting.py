@@ -73,3 +73,12 @@ def print_overloaded_employees(employees: list[Employee], threshold: float = 0.8
         percentage = int(employee.workload_ratio * 100)
         
         print(f"{employee} - {assigned}/{max_shifts} ({percentage}%)")
+
+def print_workload_score_report(employees: list[Employee]) -> None:
+    print("\nWorkload Score Report (Night=3, Evening=2, Day=1):")
+    
+    # Sort by highest load
+    sorted_employees = sorted(employees, key=lambda e: e.total_workload_score, reverse=True)
+    
+    for e in sorted_employees:
+        print(f"{e} - Score: {e.total_workload_score} (Vagter: {e.assigned_shift_count})")
