@@ -78,7 +78,7 @@ class Shift:
         return scores.get(self.shift_type, 1)
 
     def __str__(self) -> str:
-        return f"{self.date} {self.shift_type} ({self.required_skill}) [P{self.priority}]"
+        return f"{self.date} {self.shift_type} ({self.required_skill}) [P{self.priority}] [Score {self.workload_score}]"
 
     @property
     def is_fully_staffed(self):
