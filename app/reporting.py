@@ -1,4 +1,4 @@
-from models import Employee, Shift
+from app.models import Employee, Shift
 
 def print_assigned_shifts(shifts: list[Shift]) -> None:
     for shift in shifts:

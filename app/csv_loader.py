@@ -1,5 +1,5 @@
 import csv
-from models import Employee, Shift
+from app.models import Employee, Shift
 
 def load_employees_from_csv(file_path: str) -> list[Employee]:
     employees = []

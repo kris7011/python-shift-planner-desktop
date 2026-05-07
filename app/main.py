@@ -1,13 +1,13 @@
-from config import (
+from app.config import (
     WORKLOAD_RATIO_LIMIT,
     AVERAGE_SCORE_LIMIT,
     HIGH_RISK_FLAG_COUNT,
     EMPLOYEES_CSV_PATH,
     SHIFTS_CSV_PATH
 )
-from scheduler import assign_shifts
-from csv_loader import load_employees_from_csv, load_shifts_from_csv
-from reporting import (
+from app.scheduler import assign_shifts
+from app.csv_loader import load_employees_from_csv, load_shifts_from_csv
+from app.reporting import (
     print_assigned_shifts,
     print_shift_summary,
     print_unassigned_shifts,
