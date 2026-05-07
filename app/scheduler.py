@@ -1,4 +1,4 @@
-from models import Employee, Shift
+from app.models import Employee, Shift
 
 def assign_shifts(
     employees: list[Employee],
