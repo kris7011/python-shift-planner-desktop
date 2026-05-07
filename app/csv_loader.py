@@ -15,10 +15,27 @@ def load_employees_from_csv(file_path: str) -> list[Employee]:
     with open(file_path, newline="", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         for row in reader:
-            name = row["name"]
-            max_shifts = int(row["max_shifts"])
-            skills = [skill.strip() for skill in row["skills"].split(";")]
+            name = row.get("name", "").strip()
+            skills_raw = row.get("skills", "").strip()
+            
+            if not name:
+                raise ValueError(f"Invalid CSV row: 'name' cannot be empty. Row context: {row}")
+            if not skills_raw:
+                raise ValueError(f"Invalid CSV row: 'skills' cannot be empty. Row context: {row}")
+            
+            max_shifts_raw = row.get("max_shifts", "").strip()
+
+            if not max_shifts_raw:
+                raise ValueError(f"Invalid CSV row: 'max_shifts' cannot be empty. Row context: {row}")
+
+            max_shifts = parse_int(max_shifts_raw, 0, "max_shifts")
+            skills = [skill.strip() for skill in skills_raw.split(";") if skill.strip()]
+            
+            if not skills:
+                raise ValueError(f"Invalid CSV row: Employee '{name}' must have at least one skill.")
+
             employees.append(Employee(name, max_shifts, skills))
+
     return employees
 
 def load_shifts_from_csv(file_path: str) -> list[Shift]:
