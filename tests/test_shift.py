@@ -1,5 +1,6 @@
 from app.constants import ShiftType
 from app.models import Employee, Shift
+import pytest
 
 def test_shift_is_fully_staffed_when_requirement_met():
     # Arrange
@@ -68,3 +69,12 @@ def test_shift_type_string_is_converted_to_enum():
     # Act & Assert
     assert isinstance(shift_from_csv.shift_type, ShiftType)
     assert shift_from_csv.shift_type == ShiftType.DAY
+    
+def test_shift_invalid_shift_type_raises_error():
+    # Arrange & Act & Assert
+    with pytest.raises(ValueError):
+        Shift(
+            date="2026-05-11", 
+            shift_type="Invalid", 
+            required_skill="Assistant"
+        )

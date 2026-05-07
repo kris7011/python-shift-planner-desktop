@@ -123,7 +123,15 @@ class Employee:
 class Shift:
     def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2, workload_score=1):
         self.date = date
-        self.shift_type = ShiftType(shift_type)
+        
+        try:
+            if isinstance(shift_type, str):
+                self.shift_type = ShiftType(shift_type.title())
+            else:
+                self.shift_type = ShiftType(shift_type)
+        except ValueError:
+            raise ValueError(f"'{shift_type}' is not a valid ShiftType")
+        
         self.required_skill = required_skill
         self.required_staff = required_staff
         self.priority = priority
