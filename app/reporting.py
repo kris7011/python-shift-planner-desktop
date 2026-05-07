@@ -22,7 +22,7 @@ def print_unassigned_shifts(shifts: list[Shift]) -> None:
 
     print("\nUnassigned shifts:")
     for shift in unassigned:
-        print(f"{shift} [mangler {shift.missing_staff_count}/{shift.required_staff}]")
+        print(f"{shift} [missing {shift.missing_staff_count}/{shift.required_staff}]")
 
 def print_critical_unassigned_shifts(shifts: list[Shift]) -> None:
     critical = [s for s in shifts if s.priority == 1 and not s.is_fully_staffed]
@@ -33,7 +33,7 @@ def print_critical_unassigned_shifts(shifts: list[Shift]) -> None:
 
     print("\nCritical unassigned shifts:")
     for shift in critical:
-        print(f"{shift} [mangler {shift.missing_staff_count}/{shift.required_staff}]")
+        print(f"{shift} [missing {shift.missing_staff_count}/{shift.required_staff}]")
         
 def print_employee_details(employees: list[Employee]) -> None:
     print("\nEmployee details:")

@@ -14,7 +14,7 @@ def test_employee_can_take_shift_with_correct_skill():
 def test_employee_cannot_take_shift_without_skill():
     # Arrange
     employee = Employee(name="Test-Henrik", max_shifts=3, skills=["Sosu"])
-    shift = Shift(date="2026-05-11", shift_type="Day", required_skill="Sygeplejerske")
+    shift = Shift(date="2026-05-11", shift_type="Day", required_skill="Nurse")
 
     # Act
     result = employee.can_take_shift(shift)
@@ -38,7 +38,7 @@ def test_employee_cannot_take_shift_when_at_capacity():
     
 def test_employee_cannot_take_day_shift_after_evening_shift():
     # Arrange
-    employee = Employee(name="Hvile-Hanne", max_shifts=5, skills=["Sosu"])
+    employee = Employee(name="Rest-Hanne", max_shifts=5, skills=["Sosu"])
     
     evening_shift = Shift(date="2026-05-11", shift_type="Evening", required_skill="Sosu")
     next_day_shift = Shift(date="2026-05-12", shift_type="Day", required_skill="Sosu")
@@ -53,7 +53,7 @@ def test_employee_cannot_take_day_shift_after_evening_shift():
 
 def test_employee_cannot_take_any_shift_day_after_night_shift():
     # Arrange
-    employee = Employee(name="Nat-Niels", max_shifts=5, skills=["Sosu"])
+    employee = Employee(name="Night-Niels", max_shifts=5, skills=["Sosu"])
     
     night_shift = Shift(date="2026-05-11", shift_type="Night", required_skill="Sosu")
     next_evening_shift = Shift(date="2026-05-12", shift_type="Evening", required_skill="Sosu")
@@ -68,7 +68,7 @@ def test_employee_cannot_take_any_shift_day_after_night_shift():
 
 def test_employee_risk_level_changes_to_medium_at_threshold():
     # Arrange
-    employee = Employee(name="Grænse-Gert", max_shifts=4, skills=["Sosu"])
+    employee = Employee(name="Limit-Gert", max_shifts=4, skills=["Sosu"])
     
     s1 = Shift("2026-05-11", "Day", "Sosu")
     s2 = Shift("2026-05-12", "Day", "Sosu")
@@ -88,7 +88,7 @@ def test_employee_risk_level_changes_to_medium_at_threshold():
     
 def test_employee_cannot_take_two_shifts_on_same_day():
     # Arrange
-    employee = Employee(name="Dobbelt-Dagmar", max_shifts=5, skills=["Sosu"])
+    employee = Employee(name="Double-Dagmar", max_shifts=5, skills=["Sosu"])
     shift1 = Shift(date="2026-05-11", shift_type="Day", required_skill="Sosu")
     shift2 = Shift(date="2026-05-11", shift_type="Evening", required_skill="Sosu")
     
