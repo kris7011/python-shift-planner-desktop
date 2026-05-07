@@ -2,8 +2,8 @@ from app.models import Employee, Shift
 
 def test_employee_can_take_shift_with_correct_skill():
     # Arrange
-    employee = Employee(name="Test-Henrik", max_shifts=3, skills=["Sosu"])
-    shift = Shift(date="2026-05-11", shift_type="Day", required_skill="Sosu")
+    employee = Employee(name="Test-Henrik", max_shifts=3, skills=["Assistant"])
+    shift = Shift(date="2026-05-11", shift_type="Day", required_skill="Assistant")
 
     # Act
     result = employee.can_take_shift(shift)
@@ -13,7 +13,7 @@ def test_employee_can_take_shift_with_correct_skill():
 
 def test_employee_cannot_take_shift_without_skill():
     # Arrange
-    employee = Employee(name="Test-Henrik", max_shifts=3, skills=["Sosu"])
+    employee = Employee(name="Test-Henrik", max_shifts=3, skills=["Assistant"])
     shift = Shift(date="2026-05-11", shift_type="Day", required_skill="Nurse")
 
     # Act
@@ -24,9 +24,9 @@ def test_employee_cannot_take_shift_without_skill():
 
 def test_employee_cannot_take_shift_when_at_capacity():
     # Arrange
-    employee = Employee(name="Maxed-Mette", max_shifts=1, skills=["Sosu"])
-    shift1 = Shift(date="2026-05-11", shift_type="Day", required_skill="Sosu")
-    shift2 = Shift(date="2026-05-12", shift_type="Day", required_skill="Sosu")
+    employee = Employee(name="Maxed-Mette", max_shifts=1, skills=["Assistant"])
+    shift1 = Shift(date="2026-05-11", shift_type="Day", required_skill="Assistant")
+    shift2 = Shift(date="2026-05-12", shift_type="Day", required_skill="Assistant")
 
     employee.assigned_shifts.append(shift1)
 
@@ -38,10 +38,10 @@ def test_employee_cannot_take_shift_when_at_capacity():
     
 def test_employee_cannot_take_day_shift_after_evening_shift():
     # Arrange
-    employee = Employee(name="Rest-Hanne", max_shifts=5, skills=["Sosu"])
+    employee = Employee(name="Rest-Hannah", max_shifts=5, skills=["Assistant"])
     
-    evening_shift = Shift(date="2026-05-11", shift_type="Evening", required_skill="Sosu")
-    next_day_shift = Shift(date="2026-05-12", shift_type="Day", required_skill="Sosu")
+    evening_shift = Shift(date="2026-05-11", shift_type="Evening", required_skill="Assistant")
+    next_day_shift = Shift(date="2026-05-12", shift_type="Day", required_skill="Assistant")
 
     employee.assigned_shifts.append(evening_shift)
 
@@ -53,10 +53,10 @@ def test_employee_cannot_take_day_shift_after_evening_shift():
 
 def test_employee_cannot_take_any_shift_day_after_night_shift():
     # Arrange
-    employee = Employee(name="Night-Niels", max_shifts=5, skills=["Sosu"])
+    employee = Employee(name="Night-Nick", max_shifts=5, skills=["Assistant"])
     
-    night_shift = Shift(date="2026-05-11", shift_type="Night", required_skill="Sosu")
-    next_evening_shift = Shift(date="2026-05-12", shift_type="Evening", required_skill="Sosu")
+    night_shift = Shift(date="2026-05-11", shift_type="Night", required_skill="Assistant")
+    next_evening_shift = Shift(date="2026-05-12", shift_type="Evening", required_skill="Assistant")
 
     employee.assigned_shifts.append(night_shift)
 
@@ -68,11 +68,11 @@ def test_employee_cannot_take_any_shift_day_after_night_shift():
 
 def test_employee_risk_level_changes_to_medium_at_threshold():
     # Arrange
-    employee = Employee(name="Limit-Gert", max_shifts=4, skills=["Sosu"])
+    employee = Employee(name="Threshold-Tom", max_shifts=4, skills=["Assistant"])
     
-    s1 = Shift("2026-05-11", "Day", "Sosu")
-    s2 = Shift("2026-05-12", "Day", "Sosu")
-    s3 = Shift("2026-05-13", "Day", "Sosu")
+    s1 = Shift("2026-05-11", "Day", "Assistant")
+    s2 = Shift("2026-05-12", "Day", "Assistant")
+    s3 = Shift("2026-05-13", "Day", "Assistant")
     
     employee.assigned_shifts.extend([s1, s2, s3])
 
@@ -88,9 +88,9 @@ def test_employee_risk_level_changes_to_medium_at_threshold():
     
 def test_employee_cannot_take_two_shifts_on_same_day():
     # Arrange
-    employee = Employee(name="Double-Dagmar", max_shifts=5, skills=["Sosu"])
-    shift1 = Shift(date="2026-05-11", shift_type="Day", required_skill="Sosu")
-    shift2 = Shift(date="2026-05-11", shift_type="Evening", required_skill="Sosu")
+    employee = Employee(name="Double-Day-Diana", max_shifts=5, skills=["Assistant"])
+    shift1 = Shift(date="2026-05-11", shift_type="Day", required_skill="Assistant")
+    shift2 = Shift(date="2026-05-11", shift_type="Evening", required_skill="Assistant")
     
     employee.assigned_shifts.append(shift1)
 
