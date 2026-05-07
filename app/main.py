@@ -1,3 +1,6 @@
+WORKLOAD_RATIO_LIMIT = 0.75
+AVERAGE_SCORE_LIMIT = 2.0
+
 from scheduler import assign_shifts
 from csv_loader import load_employees_from_csv, load_shifts_from_csv
 from reporting import (
@@ -24,8 +27,12 @@ print_unassigned_shifts(assigned)
 print_critical_unassigned_shifts(assigned)
 print_employee_details(employees)
 print_employees_at_capacity(employees)
-print_overloaded_employees(employees, threshold=0.75)
+print_overloaded_employees(employees, threshold=WORKLOAD_RATIO_LIMIT)
 print_workload_score_report(employees)
 print_average_workload_score(employees)
 print_average_workload_ranking(employees)
-print_risk_report(employees)
+print_risk_report(
+    employees, 
+    workload_ratio_threshold=WORKLOAD_RATIO_LIMIT, 
+    average_score_threshold=AVERAGE_SCORE_LIMIT
+)
