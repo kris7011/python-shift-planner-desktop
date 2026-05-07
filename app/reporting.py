@@ -124,26 +124,32 @@ def print_risk_report(
     
     print("="*50)
     
-def print_unassigned_shift_reasons(shifts: list[Shift], employees: list[Employee]) -> None:
+def print_unassigned_report(shifts: list[Shift], employees: list[Employee], detailed: bool = False) -> None:
     unassigned = [s for s in shifts if not s.is_fully_staffed]
     
     if not unassigned:
+        print("\nAll shifts are fully staffed!")
         return
 
+    title = "DETAILED UNASSIGNED REASONS" if detailed else "UNASSIGNED SHIFTS"
     print("\n" + "="*50)
-    print(f"{'DETAILED UNASSIGNED REASONS':^50}")
+    print(f"{title:^50}")
     print("="*50)
 
     for shift in unassigned:
         print(f"\n{shift}")
-        print("Reasons per employee:")
         
-        for employee in employees:
-            if employee.can_take_shift(shift):
-                print(f"  {str(employee):10} -> could have taken it (priority issue)")
-            else:
-                blockers = employee.get_shift_blockers(shift)
-                blockers_str = ", ".join(blockers)
-                print(f"  {str(employee):10} -> {blockers_str}")
+        if not detailed:
+            can_anyone = any(e.can_take_shift(shift) for e in employees)
+            reason = "Potential candidates exist" if can_anyone else "No eligible employees found"
+            print(f"Status: {reason}")
+        else:
+            print("Reasons per employee:")
+            for e in employees:
+                if e.can_take_shift(shift):
+                    print(f"  {str(e):15} -> could have taken it")
+                else:
+                    blockers = e.get_shift_blockers(shift)
+                    print(f"  {str(e):15} -> {', '.join(blockers)}")
             
     print("\n" + "="*50)

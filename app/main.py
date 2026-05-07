@@ -19,7 +19,7 @@ from reporting import (
     print_average_workload_score,
     print_average_workload_ranking,
     print_risk_report,
-    print_unassigned_shift_reasons,
+    print_unassigned_report,
 )
 
 def main() -> None:
@@ -49,7 +49,7 @@ def main() -> None:
         average_score_threshold=AVERAGE_SCORE_LIMIT,
         high_risk_flag_count=HIGH_RISK_FLAG_COUNT,
     )
-    print_unassigned_shift_reasons(shifts, employees)
+    print_unassigned_report(assigned, employees, detailed=True)
     
 if __name__ == "__main__":
     main()
