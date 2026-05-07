@@ -3,10 +3,11 @@ from app.config import (
     AVERAGE_SCORE_LIMIT,
     HIGH_RISK_FLAG_COUNT,
     EMPLOYEES_CSV_PATH,
-    SHIFTS_CSV_PATH
+    SHIFTS_CSV_PATH,
+    EMPLOYEE_PROFILES_CSV_PATH,
 )
 from app.scheduler import assign_shifts
-from app.csv_loader import load_employees_from_csv, load_shifts_from_csv
+from app.csv_loader import load_employees_from_csv, load_shifts_from_csv, load_employee_profiles_from_csv
 from app.reporting import (
     print_assigned_shifts,
     print_shift_summary,
@@ -20,11 +21,14 @@ from app.reporting import (
     print_average_workload_ranking,
     print_risk_report,
     print_unassigned_report,
+    print_personalized_workload_report,
+    print_personalized_risk_report,
 )
 
 def main() -> None:
     employees = load_employees_from_csv(EMPLOYEES_CSV_PATH)
     shifts = load_shifts_from_csv(SHIFTS_CSV_PATH)
+    employee_profiles = load_employee_profiles_from_csv(EMPLOYEE_PROFILES_CSV_PATH)
     assigned = assign_shifts(
         employees, 
         shifts, 
@@ -50,6 +54,12 @@ def main() -> None:
         high_risk_flag_count=HIGH_RISK_FLAG_COUNT,
     )
     print_unassigned_report(assigned, employees, detailed=True)
+    print_personalized_workload_report(employees, employee_profiles)
+    print_personalized_risk_report(
+        employees,
+        employee_profiles,
+        average_score_threshold=AVERAGE_SCORE_LIMIT,
+    )
     
 if __name__ == "__main__":
     main()

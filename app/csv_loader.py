@@ -1,5 +1,6 @@
 import csv
-from app.models import Employee, Shift
+from app.constants import ShiftType
+from app.models import Employee, Shift, EmployeeProfile
 
 def parse_int(value: str | None, default: int, field_name: str) -> int:
     """Helper to validate integers from CSV strings."""
@@ -73,3 +74,52 @@ def load_shifts_from_csv(file_path: str) -> list[Shift]:
                 raise ValueError(f"Error in CSV row for date {date}: {e}")
     
     return shifts
+
+def parse_float(value: str | None, default: float, field_name: str) -> float:
+    if not value or value.strip() == "":
+        return default
+
+    try:
+        return float(value)
+    except ValueError:
+        raise ValueError(f"Field '{field_name}' must be a number, but got: '{value}'")
+
+
+def load_employee_profiles_from_csv(file_path: str) -> list[EmployeeProfile]:
+    profiles = []
+
+    with open(file_path, newline="", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+
+        for row in reader:
+            employee_id = row.get("employee_id", "").strip()
+            name = row.get("name", "").strip()
+            preferred_shift = row.get("preferred_shift", "").strip()
+
+            if not employee_id:
+                raise ValueError(f"Invalid CSV row: 'employee_id' cannot be empty. Row context: {row}")
+
+            if not name:
+                raise ValueError(f"Invalid CSV row: 'name' cannot be empty. Row context: {row}")
+
+            if not preferred_shift:
+                raise ValueError(f"Invalid CSV row: 'preferred_shift' cannot be empty. Row context: {row}")
+
+            try:
+                preferred_shift_type = ShiftType(preferred_shift.title())
+            except ValueError:
+                raise ValueError(f"Invalid preferred_shift '{preferred_shift}' for employee '{name}'")
+
+            profile = EmployeeProfile(
+                employee_id=employee_id,
+                name=name,
+                night_tolerance=parse_float(row.get("night_tolerance"), 0.5, "night_tolerance"),
+                weekend_tolerance=parse_float(row.get("weekend_tolerance"), 0.5, "weekend_tolerance"),
+                late_tolerance=parse_float(row.get("late_tolerance"), 0.5, "late_tolerance"),
+                max_weekly_load=parse_float(row.get("max_weekly_load"), 37.0, "max_weekly_load"),
+                preferred_shift=preferred_shift_type,
+            )
+
+            profiles.append(profile)
+
+    return profiles

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import datetime
 from app.constants import RiskLevel, ShiftType
 
@@ -148,3 +149,13 @@ class Shift:
     @property
     def missing_staff_count(self):
         return self.required_staff - len(self.assigned_employees)
+    
+@dataclass(frozen=True)
+class EmployeeProfile:
+    employee_id: str
+    name: str
+    night_tolerance: float
+    weekend_tolerance: float
+    late_tolerance: float
+    max_weekly_load: float
+    preferred_shift: ShiftType

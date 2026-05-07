@@ -1,4 +1,6 @@
+from app.constants import RiskLevel
 from app.models import Employee, Shift
+from app.personalized_workload import calculate_personalized_workload_score
 
 def print_assigned_shifts(shifts: list[Shift]) -> None:
     for shift in shifts:
@@ -153,3 +155,74 @@ def print_unassigned_report(shifts: list[Shift], employees: list[Employee], deta
                     print(f"  {str(e):15} -> {', '.join(blockers)}")
             
     print("\n" + "="*50)
+    
+def print_personalized_workload_report(employees, employee_profiles):
+    print("\nPERSONALIZED WORKLOAD REPORT")
+    print("-" * 40)
+
+    profiles_by_name = {
+        profile.name: profile
+        for profile in employee_profiles
+    }
+
+    for employee in employees:
+        profile = profiles_by_name.get(employee.name)
+
+        if profile is None:
+            print(f"{str(employee)}: No profile found")
+            continue
+
+        total_score = sum(
+            calculate_personalized_workload_score(shift, profile)
+            for shift in employee.assigned_shifts
+        )
+
+        shift_count = len(employee.assigned_shifts)
+        average_score = total_score / shift_count if shift_count > 0 else 0
+
+        print(
+            f"{str(employee)}: "
+            f"personalized total={total_score:.1f}, "
+            f"average={average_score:.1f}"
+        )
+        
+def print_personalized_risk_report(
+    employees,
+    employee_profiles,
+    average_score_threshold: float = 2.0,
+) -> None:
+    print("\nPERSONALIZED RISK REPORT")
+    print("-" * 40)
+
+    profiles_by_name = {
+        profile.name: profile
+        for profile in employee_profiles
+    }
+
+    for employee in employees:
+        profile = profiles_by_name.get(employee.name)
+
+        if profile is None:
+            print(f"{str(employee)}: No profile found")
+            continue
+
+        total_score = sum(
+            calculate_personalized_workload_score(shift, profile)
+            for shift in employee.assigned_shifts
+        )
+
+        shift_count = len(employee.assigned_shifts)
+        average_score = total_score / shift_count if shift_count > 0 else 0
+
+        if average_score >= average_score_threshold:
+            risk = RiskLevel.HIGH
+        elif average_score >= average_score_threshold * 0.75:
+            risk = RiskLevel.MEDIUM
+        else:
+            risk = RiskLevel.LOW
+
+        print(
+            f"{str(employee)}: "
+            f"{risk.value} "
+            f"(personalized average={average_score:.1f})"
+        )

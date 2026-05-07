@@ -4,3 +4,4 @@ HIGH_RISK_FLAG_COUNT = 2
 
 EMPLOYEES_CSV_PATH = "data/employees.csv"
 SHIFTS_CSV_PATH = "data/shifts.csv"
+EMPLOYEE_PROFILES_CSV_PATH = "data/employee_profiles.csv"
