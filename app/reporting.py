@@ -77,7 +77,6 @@ def print_overloaded_employees(employees: list[Employee], threshold: float = 0.8
 def print_workload_score_report(employees: list[Employee]) -> None:
     print("\nWorkload Score Report:")
     
-    # Sort by highest load
     sorted_employees = sorted(employees, key=lambda e: e.total_workload_score, reverse=True)
     
     for e in sorted_employees:
@@ -120,10 +119,30 @@ def print_risk_report(
             high_risk_flag_count,
         )
         
-        # Formatting: We show flags in parentheses if there are any
         flags_str = f"[ {' | '.join(flags)} ]" if flags else ""
-        
-        # We print the name, level and the specific flags
         print(f"{str(e):10} -> {level:6} {flags_str}")
     
     print("="*50)
+    
+def print_unassigned_shift_reasons(shifts: list[Shift], employees: list[Employee]) -> None:
+    unassigned = [s for s in shifts if not s.is_fully_staffed]
+    
+    if not unassigned:
+        return
+
+    print("\n" + "="*30)
+    print("  UNASSIGNED SHIFTS REASONS")
+    print("="*30)
+
+    for shift in unassigned:
+        print(f"\n{shift}")
+        print("Reason:")
+        
+        can_anyone_take_it = any(employee.can_take_shift(shift) for employee in employees)
+        
+        if not can_anyone_take_it:
+            print(" - No available employee with required skill and capacity/rest rules")
+        else:
+            print(" - Potential candidates exists, but priority/sorting prevented assignment")
+            
+    print("\n" + "="*30)
