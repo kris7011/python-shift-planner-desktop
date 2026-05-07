@@ -1,9 +1,11 @@
 from app.constants import RiskLevel
-from app.models import Employee, Shift
+from app.models import Employee, EmployeeProfile, Shift
+from app.personalized_workload import calculate_personalized_workload_score
 
 def assign_shifts(
     employees: list[Employee],
     shifts: list[Shift],
+    employee_profiles: list[EmployeeProfile] = None,
     workload_ratio_threshold: float = 0.75,
     average_score_threshold: float = 2.0,
     high_risk_flag_count: int = 2,
@@ -13,13 +15,26 @@ def assign_shifts(
         RiskLevel.MEDIUM: 1,
         RiskLevel.HIGH: 2
     }
-    
+
+    profiles_by_name = {
+        profile.name: profile
+        for profile in (employee_profiles or [])
+    }
+
     sorted_shifts = sorted(shifts, key=lambda s: s.priority)
-    
+
     for shift in sorted_shifts:
-        sorted_employees = sorted(
-            employees,
-            key=lambda e: (
+        eligible = [e for e in employees if e.can_take_shift(shift)]
+
+        def sort_key(e: Employee):
+            profile = profiles_by_name.get(e.name)
+
+            personalized_score = (
+                calculate_personalized_workload_score(shift, profile)
+                if profile else shift.workload_score
+            )
+
+            return (
                 risk_mapping[
                     e.get_risk_level(
                         workload_ratio_threshold,
@@ -27,18 +42,18 @@ def assign_shifts(
                         high_risk_flag_count,
                     )
                 ],
-                e.total_workload_score,
                 e.assigned_shift_count,
-                len(e.skills)
+                personalized_score,
+                len(e.skills),
             )
-        )
+
+        sorted_employees = sorted(eligible, key=sort_key)
 
         for employee in sorted_employees:
             if shift.is_fully_staffed:
                 break
-            
-            if employee.can_take_shift(shift):
-                shift.assigned_employees.append(employee)
-                employee.assigned_shifts.append(shift)
+
+            shift.assigned_employees.append(employee)
+            employee.assigned_shifts.append(shift)
 
     return shifts

@@ -30,11 +30,12 @@ def main() -> None:
     shifts = load_shifts_from_csv(SHIFTS_CSV_PATH)
     employee_profiles = load_employee_profiles_from_csv(EMPLOYEE_PROFILES_CSV_PATH)
     assigned = assign_shifts(
-        employees, 
-        shifts, 
-        workload_ratio_threshold=WORKLOAD_RATIO_LIMIT, 
+        employees,
+        shifts,
+        employee_profiles=employee_profiles,
+        workload_ratio_threshold=WORKLOAD_RATIO_LIMIT,
         average_score_threshold=AVERAGE_SCORE_LIMIT,
-        high_risk_flag_count=HIGH_RISK_FLAG_COUNT
+        high_risk_flag_count=HIGH_RISK_FLAG_COUNT,
     )
 
     print_assigned_shifts(assigned)
