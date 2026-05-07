@@ -69,6 +69,21 @@ class Employee:
 
         return True
     
+    def get_risk_flags(self, workload_ratio_threshold: float, average_score_threshold: float) -> list[str]:
+        flags = []
+        
+        if self.is_at_capacity:
+            flags.append("AT CAPACITY")
+            
+        if self.workload_ratio >= workload_ratio_threshold:
+            percentage = int(self.workload_ratio * 100)
+            flags.append(f"HIGH RATIO ({percentage}%)")
+            
+        if self.average_workload_score >= average_score_threshold:
+            flags.append(f"HEAVY SHIFTS ({self.average_workload_score:.1f})")
+            
+        return flags
+    
 class Shift:
     def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2, workload_score=1):
         self.date = date

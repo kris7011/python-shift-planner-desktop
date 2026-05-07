@@ -111,26 +111,16 @@ def print_risk_report(
     print("      EMPLOYEE RISK REPORT")
     print("="*30)
     
-    at_risk = [
-        e for e in employees 
-        if e.is_at_capacity or e.workload_ratio >= workload_ratio_threshold or e.average_workload_score >= average_score_threshold
-    ]        
-    
-    if not at_risk:
-        print("No employees at risk.")
-        return
-    
-    for e in at_risk:
-        status_flags = []
+    found_risk = False
+    for employee in employees:
+        flags = employee.get_risk_flags(workload_ratio_threshold, average_score_threshold)
         
-        if e.is_at_capacity:
-            status_flags.append("AT CAPACITY")
-        if e.workload_ratio >= workload_ratio_threshold:
-            status_flags.append(f"HIGH RATIO ({int(e.workload_ratio*100)}%)")
-        if e.average_workload_score >= average_score_threshold:
-            status_flags.append(f"HEAVY SHIFTS ({e.average_workload_score:.1f})")
-            
-        flags_str = " | ".join(status_flags)
-        print(f"{str(e):10} -> [ {flags_str} ]")
+        if flags:
+            found_risk = True
+            flags_str = " | ".join(flags)
+            print(f"{str(employee):10} -> [ {flags_str} ]")
+    
+    if not found_risk:
+        print("No employees at risk.")
     
     print("="*30)
