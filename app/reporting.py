@@ -120,7 +120,7 @@ def print_risk_report(
         )
         
         flags_str = f"[ {' | '.join(flags)} ]" if flags else ""
-        print(f"{str(employee):10} -> {level:6} {flags_str}")
+        print(f"{str(employee):10} -> {level.value:6} {flags_str}")
     
     print("="*50)
     

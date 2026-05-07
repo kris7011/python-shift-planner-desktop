@@ -1,3 +1,4 @@
+from app.constants import RiskLevel
 from app.models import Employee, Shift
 
 def assign_shifts(
@@ -7,7 +8,11 @@ def assign_shifts(
     average_score_threshold: float = 2.0,
     high_risk_flag_count: int = 2,
 ) -> list[Shift]:
-    risk_mapping = {"LOW": 0, "MEDIUM": 1, "HIGH": 2}
+    risk_mapping = {
+        RiskLevel.LOW: 0,
+        RiskLevel.MEDIUM: 1,
+        RiskLevel.HIGH: 2
+    }
     
     sorted_shifts = sorted(shifts, key=lambda s: s.priority)
     

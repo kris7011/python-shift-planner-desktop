@@ -1,4 +1,5 @@
 import datetime
+from app.constants import RiskLevel, ShiftType
 
 class Employee:
     def __init__(self, name, max_shifts, skills):
@@ -61,8 +62,11 @@ class Employee:
             new_date = datetime.datetime.strptime(shift.date, "%Y-%m-%d")
 
             is_next_day = new_date == existing_date + datetime.timedelta(days=1)
-            is_evening_to_day = assigned_shift.shift_type == "Evening" and shift.shift_type == "Day"
-            is_night_before = assigned_shift.shift_type == "Night"
+            is_evening_to_day = (
+            assigned_shift.shift_type == ShiftType.EVENING 
+            and shift.shift_type == ShiftType.DAY
+            )
+            is_night_before = assigned_shift.shift_type == ShiftType.NIGHT
 
             if is_next_day and (is_evening_to_day or is_night_before):
                 return False
@@ -89,15 +93,15 @@ class Employee:
         workload_ratio_threshold: float,
         average_score_threshold: float,
         high_risk_flag_count: int,
-    ) -> str:
+    ) -> RiskLevel:
         num_flags = len(self.get_risk_flags(workload_ratio_threshold, average_score_threshold))
 
         if num_flags >= high_risk_flag_count:
-            return "HIGH"
+            return RiskLevel.HIGH
         elif num_flags == 1:
-            return "MEDIUM"
+            return RiskLevel.MEDIUM
         else:
-            return "LOW"
+            return RiskLevel.LOW
         
     def get_shift_blockers(self, shift: 'Shift') -> list[str]:
         blockers = []
@@ -119,7 +123,7 @@ class Employee:
 class Shift:
     def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2, workload_score=1):
         self.date = date
-        self.shift_type = shift_type
+        self.shift_type = ShiftType(shift_type)
         self.required_skill = required_skill
         self.required_staff = required_staff
         self.priority = priority
@@ -127,7 +131,7 @@ class Shift:
         self.assigned_employees = []
 
     def __str__(self) -> str:
-        return f"{self.date} {self.shift_type} ({self.required_skill}) [P{self.priority}] [Score {self.workload_score}]"
+        return f"{self.date} {self.shift_type.value} ({self.required_skill}) [P{self.priority}] [Score {self.workload_score}]"
 
     @property
     def is_fully_staffed(self):

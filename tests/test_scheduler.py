@@ -1,10 +1,11 @@
+from app.constants import ShiftType
 from app.models import Employee, Shift
 from app.scheduler import assign_shifts
 
 def test_assign_shifts_assigns_employee_with_matching_skill():
     # Arrange
     emp = Employee(name="Assistant-John", max_shifts=5, skills=["Assistant"])
-    shift = Shift(date="2026-05-11", shift_type="Day", required_skill="Assistant", required_staff=1)
+    shift = Shift(date="2026-05-11", shift_type=ShiftType.DAY, required_skill="Assistant", required_staff=1)
     
     # Act
     assign_shifts(employees=[emp], shifts=[shift])
@@ -16,7 +17,7 @@ def test_assign_shifts_assigns_employee_with_matching_skill():
 def test_assign_shifts_skips_employee_without_skill():
     # Arrange
     emp = Employee(name="Not Qualified-Ib", max_shifts=5, skills=["Cleaning"])
-    shift = Shift(date="2026-05-11", shift_type="Day", required_skill="Assistant", required_staff=1)
+    shift = Shift(date="2026-05-11", shift_type=ShiftType.DAY, required_skill="Assistant", required_staff=1)
     
     # Act
     assign_shifts(employees=[emp], shifts=[shift])
@@ -28,8 +29,8 @@ def test_assign_shifts_skips_employee_without_skill():
 def test_assign_shifts_respects_priority():
     # Arrange:
     emp = Employee(name="Alone-Arne", max_shifts=1, skills=["Assistant"])
-    shift_low_priority = Shift(date="2026-05-11", shift_type="Day", required_skill="Assistant", priority=3)
-    shift_high_priority = Shift(date="2026-05-11", shift_type="Evening", required_skill="Assistant", priority=1)
+    shift_low_priority = Shift(date="2026-05-11", shift_type=ShiftType.DAY, required_skill="Assistant", priority=3)
+    shift_high_priority = Shift(date="2026-05-11", shift_type=ShiftType.EVENING, required_skill="Assistant", priority=1)
     
     # Act
     assign_shifts(employees=[emp], shifts=[shift_low_priority, shift_high_priority])
