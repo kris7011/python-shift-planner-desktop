@@ -84,6 +84,16 @@ class Employee:
             
         return flags
     
+    def get_risk_level(self, workload_ratio_threshold: float, average_score_threshold: float) -> str:
+        num_flags = len(self.get_risk_flags(workload_ratio_threshold, average_score_threshold))
+        
+        if num_flags >= 2:
+            return "HIGH"
+        elif num_flags == 1:
+            return "MEDIUM"
+        else:
+            return "LOW"
+    
 class Shift:
     def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2, workload_score=1):
         self.date = date

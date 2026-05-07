@@ -107,20 +107,18 @@ def print_risk_report(
     workload_ratio_threshold: float = 0.75,
     average_score_threshold: float = 2.0
 ) -> None:
-    print("\n" + "="*30)
-    print("      EMPLOYEE RISK REPORT")
-    print("="*30)
+    print("\n" + "="*50)
+    print(f"{'EMPLOYEE RISK REPORT':^50}")
+    print("="*50)
     
-    found_risk = False
-    for employee in employees:
-        flags = employee.get_risk_flags(workload_ratio_threshold, average_score_threshold)
+    for e in employees:
+        flags = e.get_risk_flags(workload_ratio_threshold, average_score_threshold)
+        level = e.get_risk_level(workload_ratio_threshold, average_score_threshold)
         
-        if flags:
-            found_risk = True
-            flags_str = " | ".join(flags)
-            print(f"{str(employee):10} -> [ {flags_str} ]")
+        # Formatting: We show flags in parentheses if there are any
+        flags_str = f"[ {' | '.join(flags)} ]" if flags else ""
+        
+        # We print the name, level and the specific flags
+        print(f"{str(e):10} -> {level:6} {flags_str}")
     
-    if not found_risk:
-        print("No employees at risk.")
-    
-    print("="*30)
+    print("="*50)
