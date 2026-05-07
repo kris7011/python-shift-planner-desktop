@@ -79,8 +79,8 @@ def print_workload_score_report(employees: list[Employee]) -> None:
     
     sorted_employees = sorted(employees, key=lambda e: e.total_workload_score, reverse=True)
     
-    for e in sorted_employees:
-        print(f"{e} - Score: {e.total_workload_score} (Shifts: {e.assigned_shift_count})")
+    for employee in sorted_employees:
+        print(f"{employee} - Score: {employee.total_workload_score} (Shifts: {employee.assigned_shift_count})")
         
 def print_average_workload_score(employees: list[Employee]) -> None:
     print("\nAverage workload score:")
@@ -111,16 +111,16 @@ def print_risk_report(
     print(f"{'EMPLOYEE RISK REPORT':^50}")
     print("="*50)
     
-    for e in employees:
-        flags = e.get_risk_flags(workload_ratio_threshold, average_score_threshold)
-        level = e.get_risk_level(
+    for employee in employees:
+        flags = employee.get_risk_flags(workload_ratio_threshold, average_score_threshold)
+        level = employee.get_risk_level(
             workload_ratio_threshold,
             average_score_threshold,
             high_risk_flag_count,
         )
         
         flags_str = f"[ {' | '.join(flags)} ]" if flags else ""
-        print(f"{str(e):10} -> {level:6} {flags_str}")
+        print(f"{str(employee):10} -> {level:6} {flags_str}")
     
     print("="*50)
     
@@ -130,19 +130,20 @@ def print_unassigned_shift_reasons(shifts: list[Shift], employees: list[Employee
     if not unassigned:
         return
 
-    print("\n" + "="*30)
-    print("  UNASSIGNED SHIFTS REASONS")
-    print("="*30)
+    print("\n" + "="*50)
+    print(f"{'DETAILED UNASSIGNED REASONS':^50}")
+    print("="*50)
 
     for shift in unassigned:
         print(f"\n{shift}")
-        print("Reason:")
+        print("Reasons per employee:")
         
-        can_anyone_take_it = any(employee.can_take_shift(shift) for employee in employees)
-        
-        if not can_anyone_take_it:
-            print(" - No available employee with required skill and capacity/rest rules")
-        else:
-            print(" - Potential candidates exists, but priority/sorting prevented assignment")
+        for employee in employees:
+            if employee.can_take_shift(shift):
+                print(f"  {str(employee):10} -> could have taken it (priority issue)")
+            else:
+                blockers = employee.get_shift_blockers(shift)
+                blockers_str = ", ".join(blockers)
+                print(f"  {str(employee):10} -> {blockers_str}")
             
-    print("\n" + "="*30)
+    print("\n" + "="*50)

@@ -98,6 +98,23 @@ class Employee:
             return "MEDIUM"
         else:
             return "LOW"
+        
+    def get_shift_blockers(self, shift: 'Shift') -> list[str]:
+        blockers = []
+        
+        if self.is_at_capacity:
+            blockers.append("at capacity")
+            
+        if not self.has_required_skill(shift):
+            blockers.append(f"missing skill {shift.required_skill}")
+            
+        if not self.has_no_shift_same_day(shift):
+            blockers.append("already has shift same day")
+            
+        if not self.has_required_rest_time(shift):
+            blockers.append("rest time violation")
+            
+        return blockers
     
 class Shift:
     def __init__(self, date, shift_type, required_skill, required_staff=1, priority=2, workload_score=1):
