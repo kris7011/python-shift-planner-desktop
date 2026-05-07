@@ -1,12 +1,27 @@
 from models import Employee, Shift
 
-def assign_shifts(employees: list[Employee], shifts: list[Shift]) -> list[Shift]:
+def assign_shifts(
+    employees: list[Employee],
+    shifts: list[Shift],
+    workload_ratio_threshold: float = 0.75,
+    average_score_threshold: float = 2.0,
+    high_risk_flag_count: int = 2,
+) -> list[Shift]:
+    risk_mapping = {"LOW": 0, "MEDIUM": 1, "HIGH": 2}
+    
     sorted_shifts = sorted(shifts, key=lambda s: s.priority)
     
     for shift in sorted_shifts:
         sorted_employees = sorted(
             employees,
             key=lambda e: (
+                risk_mapping[
+                    e.get_risk_level(
+                        workload_ratio_threshold,
+                        average_score_threshold,
+                        high_risk_flag_count,
+                    )
+                ],
                 e.total_workload_score,
                 e.assigned_shift_count,
                 len(e.skills)

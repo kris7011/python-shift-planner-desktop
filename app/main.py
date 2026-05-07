@@ -21,23 +21,33 @@ from reporting import (
     print_risk_report,
 )
 
-employees = load_employees_from_csv(EMPLOYEES_CSV_PATH)
-shifts = load_shifts_from_csv(SHIFTS_CSV_PATH)
-assigned = assign_shifts(employees, shifts)
+def main() -> None:
+    employees = load_employees_from_csv(EMPLOYEES_CSV_PATH)
+    shifts = load_shifts_from_csv(SHIFTS_CSV_PATH)
+    assigned = assign_shifts(
+        employees, 
+        shifts, 
+        workload_ratio_threshold=WORKLOAD_RATIO_LIMIT, 
+        average_score_threshold=AVERAGE_SCORE_LIMIT,
+        high_risk_flag_count=HIGH_RISK_FLAG_COUNT
+    )
 
-print_assigned_shifts(assigned)
-print_shift_summary(employees)
-print_unassigned_shifts(assigned)
-print_critical_unassigned_shifts(assigned)
-print_employee_details(employees)
-print_employees_at_capacity(employees)
-print_overloaded_employees(employees, threshold=WORKLOAD_RATIO_LIMIT)
-print_workload_score_report(employees)
-print_average_workload_score(employees)
-print_average_workload_ranking(employees)
-print_risk_report(
-    employees,
-    workload_ratio_threshold=WORKLOAD_RATIO_LIMIT,
-    average_score_threshold=AVERAGE_SCORE_LIMIT,
-    high_risk_flag_count=HIGH_RISK_FLAG_COUNT,
-)
+    print_assigned_shifts(assigned)
+    print_shift_summary(employees)
+    print_unassigned_shifts(assigned)
+    print_critical_unassigned_shifts(assigned)
+    print_employee_details(employees)
+    print_employees_at_capacity(employees)
+    print_overloaded_employees(employees, threshold=WORKLOAD_RATIO_LIMIT)
+    print_workload_score_report(employees)
+    print_average_workload_score(employees)
+    print_average_workload_ranking(employees)
+    print_risk_report(
+        employees,
+        workload_ratio_threshold=WORKLOAD_RATIO_LIMIT,
+        average_score_threshold=AVERAGE_SCORE_LIMIT,
+        high_risk_flag_count=HIGH_RISK_FLAG_COUNT,
+    )
+    
+if __name__ == "__main__":
+    main()
