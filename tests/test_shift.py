@@ -56,3 +56,15 @@ def test_shift_string_representation():
     assert "Nurse" in result
     assert "P1" in result
     assert "Score 3" in result
+    
+def test_shift_type_string_is_converted_to_enum():
+    # Arrange
+    shift_from_csv = Shift(
+        date="2026-05-11", 
+        shift_type="Day",
+        required_skill="Assistant"
+    )
+
+    # Act & Assert
+    assert isinstance(shift_from_csv.shift_type, ShiftType)
+    assert shift_from_csv.shift_type == ShiftType.DAY
