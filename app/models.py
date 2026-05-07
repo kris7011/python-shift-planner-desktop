@@ -84,10 +84,15 @@ class Employee:
             
         return flags
     
-    def get_risk_level(self, workload_ratio_threshold: float, average_score_threshold: float) -> str:
+    def get_risk_level(
+        self,
+        workload_ratio_threshold: float,
+        average_score_threshold: float,
+        high_risk_flag_count: int,
+    ) -> str:
         num_flags = len(self.get_risk_flags(workload_ratio_threshold, average_score_threshold))
-        
-        if num_flags >= 2:
+
+        if num_flags >= high_risk_flag_count:
             return "HIGH"
         elif num_flags == 1:
             return "MEDIUM"

@@ -105,7 +105,8 @@ def print_average_workload_ranking(employees: list[Employee]) -> None:
 def print_risk_report(
     employees: list[Employee],
     workload_ratio_threshold: float = 0.75,
-    average_score_threshold: float = 2.0
+    average_score_threshold: float = 2.0,
+    high_risk_flag_count: int = 2,
 ) -> None:
     print("\n" + "="*50)
     print(f"{'EMPLOYEE RISK REPORT':^50}")
@@ -113,7 +114,11 @@ def print_risk_report(
     
     for e in employees:
         flags = e.get_risk_flags(workload_ratio_threshold, average_score_threshold)
-        level = e.get_risk_level(workload_ratio_threshold, average_score_threshold)
+        level = e.get_risk_level(
+            workload_ratio_threshold,
+            average_score_threshold,
+            high_risk_flag_count,
+        )
         
         # Formatting: We show flags in parentheses if there are any
         flags_str = f"[ {' | '.join(flags)} ]" if flags else ""
