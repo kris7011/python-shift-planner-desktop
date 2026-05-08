@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox, scrolledtext, ttk
+from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 from app.config import (
     WORKLOAD_RATIO_LIMIT,
@@ -18,10 +18,14 @@ from app.scheduler import assign_shifts
 from app.personalized_workload import calculate_personalized_workload_score
 
 
-def load_schedule_data():
-    employees = load_employees_from_csv(EMPLOYEES_CSV_PATH)
-    shifts = load_shifts_from_csv(SHIFTS_CSV_PATH)
-    employee_profiles = load_employee_profiles_from_csv(EMPLOYEE_PROFILES_CSV_PATH)
+def load_schedule_data(
+    employees_path: str,
+    shifts_path: str,
+    profiles_path: str,
+):
+    employees = load_employees_from_csv(employees_path)
+    shifts = load_shifts_from_csv(shifts_path)
+    employee_profiles = load_employee_profiles_from_csv(profiles_path)
 
     assigned_shifts = assign_shifts(
         employees,
@@ -144,7 +148,11 @@ class ShiftPlannerApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Python Shift Planner")
-        self.root.geometry("1100x750")
+        self.root.geometry("1150x800")
+
+        self.employees_path = tk.StringVar(value=EMPLOYEES_CSV_PATH)
+        self.shifts_path = tk.StringVar(value=SHIFTS_CSV_PATH)
+        self.profiles_path = tk.StringVar(value=EMPLOYEE_PROFILES_CSV_PATH)
 
         title = tk.Label(
             root,
@@ -159,6 +167,8 @@ class ShiftPlannerApp:
             font=("Arial", 10),
         )
         subtitle.pack(pady=5)
+
+        self.create_file_picker_section(root)
 
         button_frame = tk.Frame(root)
         button_frame.pack(pady=10)
@@ -187,6 +197,79 @@ class ShiftPlannerApp:
         self.risk_output = self.create_tab("Risk Report")
         self.explanation_output = self.create_tab("Explanations")
 
+    def create_file_picker_section(self, root: tk.Tk) -> None:
+        file_frame = tk.LabelFrame(root, text="CSV files", padx=10, pady=10)
+        file_frame.pack(fill="x", padx=10, pady=10)
+
+        self.create_file_picker_row(
+            file_frame,
+            row=0,
+            label="Employees CSV:",
+            variable=self.employees_path,
+        )
+
+        self.create_file_picker_row(
+            file_frame,
+            row=1,
+            label="Shifts CSV:",
+            variable=self.shifts_path,
+        )
+
+        self.create_file_picker_row(
+            file_frame,
+            row=2,
+            label="Profiles CSV:",
+            variable=self.profiles_path,
+        )
+
+    def create_file_picker_row(
+        self,
+        parent,
+        row: int,
+        label: str,
+        variable: tk.StringVar,
+    ) -> None:
+        tk.Label(parent, text=label, width=15, anchor="w").grid(
+            row=row,
+            column=0,
+            padx=5,
+            pady=4,
+            sticky="w",
+        )
+
+        entry = tk.Entry(parent, textvariable=variable)
+        entry.grid(
+            row=row,
+            column=1,
+            padx=5,
+            pady=4,
+            sticky="ew",
+        )
+
+        browse_button = tk.Button(
+            parent,
+            text="Browse",
+            command=lambda: self.browse_file(variable),
+            width=12,
+        )
+        browse_button.grid(
+            row=row,
+            column=2,
+            padx=5,
+            pady=4,
+        )
+
+        parent.columnconfigure(1, weight=1)
+
+    def browse_file(self, variable: tk.StringVar) -> None:
+        selected_file = filedialog.askopenfilename(
+            title="Select CSV file",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+        )
+
+        if selected_file:
+            variable.set(selected_file)
+
     def create_tab(self, title: str):
         frame = ttk.Frame(self.tabs)
         self.tabs.add(frame, text=title)
@@ -202,7 +285,11 @@ class ShiftPlannerApp:
 
     def run_scheduler(self) -> None:
         try:
-            employees, shifts, employee_profiles = load_schedule_data()
+            employees, shifts, employee_profiles = load_schedule_data(
+                employees_path=self.employees_path.get(),
+                shifts_path=self.shifts_path.get(),
+                profiles_path=self.profiles_path.get(),
+            )
 
             self.set_output(self.assigned_output, build_assigned_output(shifts))
             self.set_output(self.unassigned_output, build_unassigned_output(shifts))
