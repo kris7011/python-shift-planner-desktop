@@ -196,7 +196,10 @@ class ShiftPlannerApp:
             "Assigned Shifts",
             ["Date", "Shift", "Skill", "Assigned", "Priority", "Score"],
         )
-        self.unassigned_output = self.create_tab("Unassigned")
+        self.unassigned_table = self.create_table_tab(
+            "Unassigned",
+            ["Date", "Shift", "Skill", "Missing", "Priority", "Score"],
+        )
         self.risk_output = self.create_tab("Risk Report")
         self.explanation_output = self.create_tab("Explanations")
 
@@ -295,7 +298,7 @@ class ShiftPlannerApp:
             )
 
             self.populate_assigned_table(shifts)
-            self.set_output(self.unassigned_output, build_unassigned_output(shifts))
+            self.populate_unassigned_table(shifts)
             self.set_output(self.risk_output, build_risk_output(employees, employee_profiles))
             self.set_output(
                 self.explanation_output,
@@ -311,9 +314,9 @@ class ShiftPlannerApp:
 
     def clear_output(self) -> None:
         self.assigned_table.delete(*self.assigned_table.get_children())
+        self.unassigned_table.delete(*self.unassigned_table.get_children())
 
         for output in [
-            self.unassigned_output,
             self.risk_output,
             self.explanation_output,
         ]:
@@ -355,6 +358,28 @@ class ShiftPlannerApp:
                     shift.shift_type.value,
                     shift.required_skill,
                     assigned,
+                    shift.priority,
+                    shift.workload_score,
+                ),
+            )
+    
+    def populate_unassigned_table(self, shifts) -> None:
+        self.unassigned_table.delete(*self.unassigned_table.get_children())
+
+        unassigned = [
+            shift for shift in shifts
+            if not shift.is_fully_staffed
+        ]
+
+        for shift in unassigned:
+            self.unassigned_table.insert(
+                "",
+                tk.END,
+                values=(
+                    shift.date,
+                    shift.shift_type.value,
+                    shift.required_skill,
+                    f"{shift.missing_staff_count}/{shift.required_staff}",
                     shift.priority,
                     shift.workload_score,
                 ),
