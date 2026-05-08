@@ -153,6 +153,9 @@ class ShiftPlannerApp:
         self.employees_path = tk.StringVar(value=EMPLOYEES_CSV_PATH)
         self.shifts_path = tk.StringVar(value=SHIFTS_CSV_PATH)
         self.profiles_path = tk.StringVar(value=EMPLOYEE_PROFILES_CSV_PATH)
+        
+        self.current_shifts = []
+        self.current_profiles = []
 
         title = tk.Label(
             root,
@@ -196,6 +199,8 @@ class ShiftPlannerApp:
             "Assigned Shifts",
             ["Date", "Shift", "Skill", "Assigned", "Priority", "Score"],
         )
+        self.assigned_table.bind("<<TreeviewSelect>>", self.show_selected_shift_explanation)
+        
         self.unassigned_table = self.create_table_tab(
             "Unassigned",
             ["Date", "Shift", "Skill", "Missing", "Priority", "Score"],
@@ -300,6 +305,9 @@ class ShiftPlannerApp:
                 profiles_path=self.profiles_path.get(),
             )
 
+            self.current_shifts = shifts
+            self.current_profiles = employee_profiles
+
             self.populate_assigned_table(shifts)
             self.populate_unassigned_table(shifts)
             self.populate_risk_table(employees, employee_profiles)
@@ -316,14 +324,14 @@ class ShiftPlannerApp:
         output.insert(tk.END, text)
 
     def clear_output(self) -> None:
+        self.current_shifts = []
+        self.current_profiles = []
+
         self.assigned_table.delete(*self.assigned_table.get_children())
         self.unassigned_table.delete(*self.unassigned_table.get_children())
         self.risk_table.delete(*self.risk_table.get_children())
 
-        for output in [
-            self.explanation_output,
-        ]:
-            output.delete("1.0", tk.END)
+        self.explanation_output.delete("1.0", tk.END)
     
     def create_table_tab(self, title: str, columns: list[str]):
         frame = ttk.Frame(self.tabs)
@@ -346,7 +354,7 @@ class ShiftPlannerApp:
     def populate_assigned_table(self, shifts) -> None:
         self.assigned_table.delete(*self.assigned_table.get_children())
 
-        for shift in shifts:
+        for index, shift in enumerate(shifts):
             assigned = (
                 ", ".join(str(employee) for employee in shift.assigned_employees)
                 if shift.assigned_employees
@@ -356,6 +364,7 @@ class ShiftPlannerApp:
             self.assigned_table.insert(
                 "",
                 tk.END,
+                iid=str(index),
                 values=(
                     shift.date,
                     shift.shift_type.value,
@@ -433,6 +442,62 @@ class ShiftPlannerApp:
                     employee.assigned_shift_count,
                 ),
             )
+            
+    def show_selected_shift_explanation(self, event=None) -> None:
+        selected = self.assigned_table.selection()
+
+        if not selected:
+            return
+
+        selected_index = int(selected[0])
+
+        if selected_index >= len(self.current_shifts):
+            return
+
+        shift = self.current_shifts[selected_index]
+
+        profiles_by_name = {
+            profile.name: profile
+            for profile in self.current_profiles
+        }
+
+        lines = []
+        lines.append("SELECTED SHIFT EXPLANATION")
+        lines.append("=" * 50)
+        lines.append("")
+        lines.append(str(shift))
+
+        if not shift.assigned_employees:
+            lines.append("No assignment")
+            self.set_output(self.explanation_output, "\n".join(lines))
+            return
+
+        for employee in shift.assigned_employees:
+            profile = profiles_by_name.get(str(employee))
+
+            lines.append("")
+            lines.append(f"Assigned to: {employee}")
+            lines.append(f"Required skill: {shift.required_skill}")
+            lines.append(f"Employee skills: {', '.join(employee.skills)}")
+
+            if profile is None:
+                lines.append("No employee profile found")
+                continue
+
+            personalized_score = calculate_personalized_workload_score(
+                shift,
+                profile,
+            )
+
+            lines.append(f"Preferred shift: {profile.preferred_shift.value}")
+            lines.append(f"Personalized score: {personalized_score:.1f}")
+
+            if shift.shift_type == profile.preferred_shift:
+                lines.append("Reason: shift matches employee preference")
+            else:
+                lines.append("Reason: employee was eligible and had a suitable score")
+
+        self.set_output(self.explanation_output, "\n".join(lines))
 
 
 def main() -> None:
