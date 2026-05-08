@@ -192,7 +192,10 @@ class ShiftPlannerApp:
         self.tabs = ttk.Notebook(root)
         self.tabs.pack(expand=True, fill="both", padx=10, pady=10)
 
-        self.assigned_output = self.create_tab("Assigned Shifts")
+        self.assigned_table = self.create_table_tab(
+            "Assigned Shifts",
+            ["Date", "Shift", "Skill", "Assigned", "Priority", "Score"],
+        )
         self.unassigned_output = self.create_tab("Unassigned")
         self.risk_output = self.create_tab("Risk Report")
         self.explanation_output = self.create_tab("Explanations")
@@ -291,7 +294,7 @@ class ShiftPlannerApp:
                 profiles_path=self.profiles_path.get(),
             )
 
-            self.set_output(self.assigned_output, build_assigned_output(shifts))
+            self.populate_assigned_table(shifts)
             self.set_output(self.unassigned_output, build_unassigned_output(shifts))
             self.set_output(self.risk_output, build_risk_output(employees, employee_profiles))
             self.set_output(
@@ -307,13 +310,55 @@ class ShiftPlannerApp:
         output.insert(tk.END, text)
 
     def clear_output(self) -> None:
+        self.assigned_table.delete(*self.assigned_table.get_children())
+
         for output in [
-            self.assigned_output,
             self.unassigned_output,
             self.risk_output,
             self.explanation_output,
         ]:
             output.delete("1.0", tk.END)
+    
+    def create_table_tab(self, title: str, columns: list[str]):
+        frame = ttk.Frame(self.tabs)
+        self.tabs.add(frame, text=title)
+
+        tree = ttk.Treeview(frame, columns=columns, show="headings")
+
+        for column in columns:
+            tree.heading(column, text=column)
+            tree.column(column, width=140, anchor="w")
+
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scrollbar.set)
+
+        tree.pack(side=tk.LEFT, expand=True, fill="both", padx=(10, 0), pady=10)
+        scrollbar.pack(side=tk.RIGHT, fill="y", padx=(0, 10), pady=10)
+
+        return tree
+    
+    def populate_assigned_table(self, shifts) -> None:
+        self.assigned_table.delete(*self.assigned_table.get_children())
+
+        for shift in shifts:
+            assigned = (
+                ", ".join(str(employee) for employee in shift.assigned_employees)
+                if shift.assigned_employees
+                else "No assignment"
+            )
+
+            self.assigned_table.insert(
+                "",
+                tk.END,
+                values=(
+                    shift.date,
+                    shift.shift_type.value,
+                    shift.required_skill,
+                    assigned,
+                    shift.priority,
+                    shift.workload_score,
+                ),
+            )
 
 
 def main() -> None:
