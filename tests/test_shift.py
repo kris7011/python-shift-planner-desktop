@@ -46,16 +46,22 @@ def test_shift_over_staffing_is_fully_staffed():
 
 def test_shift_string_representation():
     # Arrange
-    shift = Shift(date="2026-05-11", shift_type=ShiftType.NIGHT, required_skill="Nurse", priority=1, workload_score=3)
-    
+    shift = Shift(
+        date="2026-05-11",
+        shift_type=ShiftType.NIGHT,
+        required_skill="Nurse",
+        priority=1,
+        workload_score=3,
+    )
+
     # Act
     result = str(shift)
-    
+
     # Assert
     assert "2026-05-11" in result
-    assert ShiftType.NIGHT.value in result
+    assert ShiftType.NIGHT.display_name in result
     assert "Nurse" in result
-    assert "P1" in result
+    assert "Prioritet 1" in result
     assert "Score 3" in result
     
 def test_shift_type_string_is_converted_to_enum():
