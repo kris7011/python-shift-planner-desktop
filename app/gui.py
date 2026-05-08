@@ -40,7 +40,7 @@ def load_schedule_data(
 
 
 def build_assigned_output(shifts) -> str:
-    lines = ["ASSIGNED SHIFTS", "=" * 50]
+    lines = ["TILDELTE VAGTER", "=" * 50]
 
     for shift in shifts:
         if shift.assigned_employees:
@@ -53,7 +53,7 @@ def build_assigned_output(shifts) -> str:
 
 
 def build_unassigned_output(shifts) -> str:
-    lines = ["UNASSIGNED SHIFTS", "=" * 50]
+    lines = ["UBESATTE VAGTER", "=" * 50]
     unassigned = [shift for shift in shifts if not shift.is_fully_staffed]
 
     if not unassigned:
@@ -147,7 +147,7 @@ def build_explanation_output(shifts, employee_profiles) -> str:
 class ShiftPlannerApp:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("Python Shift Planner")
+        self.root.title("Vagtplanlægning")
         self.root.geometry("1150x800")
 
         self.employees_path = tk.StringVar(value=EMPLOYEES_CSV_PATH)
@@ -159,14 +159,14 @@ class ShiftPlannerApp:
 
         title = tk.Label(
             root,
-            text="Python Shift Planner",
+            text="Vagtplanlægning",
             font=("Arial", 18, "bold"),
         )
         title.pack(pady=10)
 
         subtitle = tk.Label(
             root,
-            text="Shift planning, workload analysis and personalized risk reporting",
+            text="Planlægning, belastningsanalyse og personlig risikovurdering",
             font=("Arial", 10),
         )
         subtitle.pack(pady=5)
@@ -178,7 +178,7 @@ class ShiftPlannerApp:
 
         run_button = tk.Button(
             button_frame,
-            text="Run Scheduler",
+            text="Kør vagtplan",
             command=self.run_scheduler,
             width=20,
         )
@@ -186,7 +186,7 @@ class ShiftPlannerApp:
 
         clear_button = tk.Button(
             button_frame,
-            text="Clear",
+            text="Ryd",
             command=self.clear_output,
             width=20,
         )
@@ -194,7 +194,7 @@ class ShiftPlannerApp:
         
         export_button = tk.Button(
             button_frame,
-            text="Export Report",
+            text="Eksportér rapport",
             command=self.export_report,
             width=20,
         )
@@ -204,20 +204,20 @@ class ShiftPlannerApp:
         self.tabs.pack(expand=True, fill="both", padx=10, pady=10)
 
         self.assigned_table = self.create_table_tab(
-            "Assigned Shifts",
-            ["Date", "Shift", "Skill", "Assigned", "Priority", "Score"],
+            "Tildelte vagter",
+            ["Dato", "Vagt", "Kompetence", "Tildelt", "Prioritet", "Score"],
         )
         self.assigned_table.bind("<<TreeviewSelect>>", self.show_selected_shift_explanation)
         
         self.unassigned_table = self.create_table_tab(
-            "Unassigned",
-            ["Date", "Shift", "Skill", "Missing", "Priority", "Score"],
+            "Ubesatte vagter",
+            ["Dato", "Vagt", "Kompetence", "Mangler", "Prioritet", "Score"],
         )
         self.risk_table = self.create_table_tab(
-            "Risk Report",
-            ["Employee", "Risk", "Average", "Shifts"],
+            "Risikorapport",
+            ["Medarbejder", "Risiko", "Gennemsnit", "Vagter"],
         )
-        self.explanation_output = self.create_tab("Explanations")
+        self.explanation_output = self.create_tab("Forklaringer")
 
     def create_file_picker_section(self, root: tk.Tk) -> None:
         file_frame = tk.LabelFrame(root, text="CSV files", padx=10, pady=10)
@@ -226,21 +226,21 @@ class ShiftPlannerApp:
         self.create_file_picker_row(
             file_frame,
             row=0,
-            label="Employees CSV:",
+            label="Medarbejdere CSV:",
             variable=self.employees_path,
         )
 
         self.create_file_picker_row(
             file_frame,
             row=1,
-            label="Shifts CSV:",
+            label="Vagter CSV:",
             variable=self.shifts_path,
         )
 
         self.create_file_picker_row(
             file_frame,
             row=2,
-            label="Profiles CSV:",
+            label="Profiler CSV:",
             variable=self.profiles_path,
         )
 
@@ -285,8 +285,8 @@ class ShiftPlannerApp:
 
     def browse_file(self, variable: tk.StringVar) -> None:
         selected_file = filedialog.askopenfilename(
-            title="Select CSV file",
-            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            title="Vælg CSV-fil",
+            filetypes=[("CSV-filer", "*.csv"), ("All files", "*.*")],
         )
 
         if selected_file:
@@ -366,7 +366,7 @@ class ShiftPlannerApp:
             assigned = (
                 ", ".join(str(employee) for employee in shift.assigned_employees)
                 if shift.assigned_employees
-                else "No assignment"
+                else "Ingen tildeling"
             )
 
             self.assigned_table.insert(
@@ -375,7 +375,7 @@ class ShiftPlannerApp:
                 iid=str(index),
                 values=(
                     shift.date,
-                    shift.shift_type.value,
+                    shift.shift_type.display_name,
                     shift.required_skill,
                     assigned,
                     shift.priority,
@@ -397,7 +397,7 @@ class ShiftPlannerApp:
                 tk.END,
                 values=(
                     shift.date,
-                    shift.shift_type.value,
+                    shift.shift_type.display_name,
                     shift.required_skill,
                     f"{shift.missing_staff_count}/{shift.required_staff}",
                     shift.priority,
@@ -417,7 +417,7 @@ class ShiftPlannerApp:
             profile = profiles_by_name.get(str(employee))
 
             if profile is None:
-                risk = "UNKNOWN"
+                risk = "Ukendt"
                 average_score = 0
             else:
                 total_score = sum(
@@ -434,11 +434,11 @@ class ShiftPlannerApp:
                 )
 
                 if average_score >= AVERAGE_SCORE_LIMIT:
-                    risk = "HIGH"
+                    risk = "Høj"
                 elif average_score >= AVERAGE_SCORE_LIMIT * 0.75:
-                    risk = "MEDIUM"
+                    risk = "Middel"
                 else:
-                    risk = "LOW"
+                    risk = "Lav"
 
             self.risk_table.insert(
                 "",
@@ -470,13 +470,13 @@ class ShiftPlannerApp:
         }
 
         lines = []
-        lines.append("SELECTED SHIFT EXPLANATION")
+        lines.append("FORKLARING AF VALGT VAGT")
         lines.append("=" * 50)
         lines.append("")
         lines.append(str(shift))
 
         if not shift.assigned_employees:
-            lines.append("No assignment")
+            lines.append("Ingen tildeling")
             self.set_output(self.explanation_output, "\n".join(lines))
             return
 
@@ -484,12 +484,12 @@ class ShiftPlannerApp:
             profile = profiles_by_name.get(str(employee))
 
             lines.append("")
-            lines.append(f"Assigned to: {employee}")
-            lines.append(f"Required skill: {shift.required_skill}")
-            lines.append(f"Employee skills: {', '.join(employee.skills)}")
+            lines.append(f"Tildelt til: {employee}")
+            lines.append(f"Krævet kompetence: {shift.required_skill}")
+            lines.append(f"Medarbejderkompetencer: {', '.join(employee.skills)}")
 
             if profile is None:
-                lines.append("No employee profile found")
+                lines.append("Ingen medarbejderprofil fundet")
                 continue
 
             personalized_score = calculate_personalized_workload_score(
@@ -497,25 +497,25 @@ class ShiftPlannerApp:
                 profile,
             )
 
-            lines.append(f"Preferred shift: {profile.preferred_shift.value}")
-            lines.append(f"Personalized score: {personalized_score:.1f}")
+            lines.append(f"Foretrukken vagttype: {profile.preferred_shift.display_name}")
+            lines.append(f"Personlig belastningsscore: {personalized_score:.1f}")
 
             if shift.shift_type == profile.preferred_shift:
-                lines.append("Reason: shift matches employee preference")
+                lines.append("Begrundelse: vagten matcher medarbejderens foretrukne vagttype")
             else:
-                lines.append("Reason: employee was eligible and had a suitable score")
+                lines.append("Begrundelse: medarbejderen var kvalificeret og havde en passende belastningsscore")
 
         self.set_output(self.explanation_output, "\n".join(lines))
         
     def export_report(self) -> None:
         if not self.current_shifts:
-            messagebox.showinfo("No data", "Run scheduler before exporting a report.")
+            messagebox.showinfo("Ingen data", "Kør vagtplanen før du eksporterer en rapport.")
             return
 
         selected_file = filedialog.asksaveasfilename(
-            title="Save report",
+            title="Gem rapport",
             defaultextension=".txt",
-            filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+            filetypes=[("Tekstfiler", "*.txt"), ("Alle filer", "*.*")],
         )
 
         if not selected_file:

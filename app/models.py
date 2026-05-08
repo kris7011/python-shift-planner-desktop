@@ -140,7 +140,7 @@ class Shift:
         self.assigned_employees = []
 
     def __str__(self) -> str:
-        return f"{self.date} {self.shift_type.value} ({self.required_skill}) [P{self.priority}] [Score {self.workload_score}]"
+        return f"{self.date} {self.shift_type.display_name} ({self.required_skill}) [Prioritet {self.priority}] [Score {self.workload_score}]"
 
     @property
     def is_fully_staffed(self):
