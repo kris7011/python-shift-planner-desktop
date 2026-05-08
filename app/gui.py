@@ -191,6 +191,14 @@ class ShiftPlannerApp:
             width=20,
         )
         clear_button.pack(side=tk.LEFT, padx=5)
+        
+        export_button = tk.Button(
+            button_frame,
+            text="Export Report",
+            command=self.export_report,
+            width=20,
+        )
+        export_button.pack(side=tk.LEFT, padx=5)
 
         self.tabs = ttk.Notebook(root)
         self.tabs.pack(expand=True, fill="both", padx=10, pady=10)
@@ -498,6 +506,44 @@ class ShiftPlannerApp:
                 lines.append("Reason: employee was eligible and had a suitable score")
 
         self.set_output(self.explanation_output, "\n".join(lines))
+        
+    def export_report(self) -> None:
+        if not self.current_shifts:
+            messagebox.showinfo("No data", "Run scheduler before exporting a report.")
+            return
+
+        selected_file = filedialog.asksaveasfilename(
+            title="Save report",
+            defaultextension=".txt",
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+        )
+
+        if not selected_file:
+            return
+
+        report_parts = [
+            build_assigned_output(self.current_shifts),
+            build_unassigned_output(self.current_shifts),
+            self.build_current_risk_report_text(),
+            build_explanation_output(self.current_shifts, self.current_profiles),
+        ]
+
+        with open(selected_file, "w", encoding="utf-8") as file:
+            file.write("\n\n".join(report_parts))
+
+        messagebox.showinfo("Export complete", f"Report saved to:\n{selected_file}")
+        
+    def build_current_risk_report_text(self) -> str:
+        lines = ["PERSONALIZED RISK REPORT", "=" * 50]
+
+        for item in self.risk_table.get_children():
+            employee, risk, average, shifts = self.risk_table.item(item, "values")
+            lines.append(
+                f"{employee}: {risk} "
+                f"(personalized average={average}, shifts={shifts})"
+            )
+
+        return "\n".join(lines)
 
 
 def main() -> None:
