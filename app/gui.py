@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import scrolledtext, messagebox
+from tkinter import messagebox, scrolledtext, ttk
 
 from app.config import (
     WORKLOAD_RATIO_LIMIT,
@@ -18,7 +18,7 @@ from app.scheduler import assign_shifts
 from app.personalized_workload import calculate_personalized_workload_score
 
 
-def build_schedule_output() -> str:
+def load_schedule_data():
     employees = load_employees_from_csv(EMPLOYEES_CSV_PATH)
     shifts = load_shifts_from_csv(SHIFTS_CSV_PATH)
     employee_profiles = load_employee_profiles_from_csv(EMPLOYEE_PROFILES_CSV_PATH)
@@ -32,40 +32,43 @@ def build_schedule_output() -> str:
         high_risk_flag_count=HIGH_RISK_FLAG_COUNT,
     )
 
-    profiles_by_name = {
-        profile.name: profile
-        for profile in employee_profiles
-    }
+    return employees, assigned_shifts, employee_profiles
 
-    lines = []
 
-    lines.append("ASSIGNED SHIFTS")
-    lines.append("=" * 50)
+def build_assigned_output(shifts) -> str:
+    lines = ["ASSIGNED SHIFTS", "=" * 50]
 
-    for shift in assigned_shifts:
+    for shift in shifts:
         if shift.assigned_employees:
             names = ", ".join(str(employee) for employee in shift.assigned_employees)
             lines.append(f"{shift} -> {names}")
         else:
             lines.append(f"{shift} -> No assignment")
 
-    lines.append("")
-    lines.append("UNASSIGNED SHIFTS")
-    lines.append("=" * 50)
+    return "\n".join(lines)
 
-    unassigned = [shift for shift in assigned_shifts if not shift.is_fully_staffed]
+
+def build_unassigned_output(shifts) -> str:
+    lines = ["UNASSIGNED SHIFTS", "=" * 50]
+    unassigned = [shift for shift in shifts if not shift.is_fully_staffed]
 
     if not unassigned:
         lines.append("All shifts are fully staffed")
-    else:
-        for shift in unassigned:
-            lines.append(
-                f"{shift} [missing {shift.missing_staff_count}/{shift.required_staff}]"
-            )
+        return "\n".join(lines)
 
-    lines.append("")
-    lines.append("PERSONALIZED RISK REPORT")
-    lines.append("=" * 50)
+    for shift in unassigned:
+        lines.append(f"{shift} [missing {shift.missing_staff_count}/{shift.required_staff}]")
+
+    return "\n".join(lines)
+
+
+def build_risk_output(employees, employee_profiles) -> str:
+    lines = ["PERSONALIZED RISK REPORT", "=" * 50]
+
+    profiles_by_name = {
+        profile.name: profile
+        for profile in employee_profiles
+    }
 
     for employee in employees:
         profile = profiles_by_name.get(str(employee))
@@ -97,11 +100,51 @@ def build_schedule_output() -> str:
     return "\n".join(lines)
 
 
+def build_explanation_output(shifts, employee_profiles) -> str:
+    lines = ["ASSIGNMENT EXPLANATIONS", "=" * 50]
+
+    profiles_by_name = {
+        profile.name: profile
+        for profile in employee_profiles
+    }
+
+    for shift in shifts:
+        lines.append("")
+        lines.append(str(shift))
+
+        if not shift.assigned_employees:
+            lines.append("  No assignment")
+            continue
+
+        for employee in shift.assigned_employees:
+            profile = profiles_by_name.get(str(employee))
+
+            lines.append(f"  Assigned to: {employee}")
+            lines.append(f"  Required skill: {shift.required_skill}")
+            lines.append(f"  Employee skills: {', '.join(employee.skills)}")
+
+            if profile is None:
+                lines.append("  No employee profile found")
+                continue
+
+            personalized_score = calculate_personalized_workload_score(shift, profile)
+
+            lines.append(f"  Preferred shift: {profile.preferred_shift.value}")
+            lines.append(f"  Personalized score: {personalized_score:.1f}")
+
+            if shift.shift_type == profile.preferred_shift:
+                lines.append("  Reason: shift matches employee preference")
+            else:
+                lines.append("  Reason: employee was eligible and had a suitable score")
+
+    return "\n".join(lines)
+
+
 class ShiftPlannerApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Python Shift Planner")
-        self.root.geometry("1000x700")
+        self.root.geometry("1100x750")
 
         title = tk.Label(
             root,
@@ -112,7 +155,7 @@ class ShiftPlannerApp:
 
         subtitle = tk.Label(
             root,
-            text="Prototype for shift planning, workload analysis and personalized risk reporting",
+            text="Shift planning, workload analysis and personalized risk reporting",
             font=("Arial", 10),
         )
         subtitle.pack(pady=5)
@@ -136,28 +179,59 @@ class ShiftPlannerApp:
         )
         clear_button.pack(side=tk.LEFT, padx=5)
 
-        self.output = scrolledtext.ScrolledText(
-            root,
+        self.tabs = ttk.Notebook(root)
+        self.tabs.pack(expand=True, fill="both", padx=10, pady=10)
+
+        self.assigned_output = self.create_tab("Assigned Shifts")
+        self.unassigned_output = self.create_tab("Unassigned")
+        self.risk_output = self.create_tab("Risk Report")
+        self.explanation_output = self.create_tab("Explanations")
+
+    def create_tab(self, title: str):
+        frame = ttk.Frame(self.tabs)
+        self.tabs.add(frame, text=title)
+
+        output = scrolledtext.ScrolledText(
+            frame,
             wrap=tk.WORD,
             font=("Consolas", 10),
         )
-        self.output.pack(expand=True, fill="both", padx=10, pady=10)
+        output.pack(expand=True, fill="both", padx=10, pady=10)
+
+        return output
 
     def run_scheduler(self) -> None:
         try:
-            result = build_schedule_output()
-            self.output.delete("1.0", tk.END)
-            self.output.insert(tk.END, result)
+            employees, shifts, employee_profiles = load_schedule_data()
+
+            self.set_output(self.assigned_output, build_assigned_output(shifts))
+            self.set_output(self.unassigned_output, build_unassigned_output(shifts))
+            self.set_output(self.risk_output, build_risk_output(employees, employee_profiles))
+            self.set_output(
+                self.explanation_output,
+                build_explanation_output(shifts, employee_profiles),
+            )
+
         except Exception as error:
             messagebox.showerror("Error", str(error))
 
+    def set_output(self, output, text: str) -> None:
+        output.delete("1.0", tk.END)
+        output.insert(tk.END, text)
+
     def clear_output(self) -> None:
-        self.output.delete("1.0", tk.END)
+        for output in [
+            self.assigned_output,
+            self.unassigned_output,
+            self.risk_output,
+            self.explanation_output,
+        ]:
+            output.delete("1.0", tk.END)
 
 
 def main() -> None:
     root = tk.Tk()
-    app = ShiftPlannerApp(root)
+    ShiftPlannerApp(root)
     root.mainloop()
 
 
