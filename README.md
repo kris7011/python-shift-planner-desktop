@@ -1,7 +1,3 @@
-# Python Shift Planner (Desktop)
-
-A simple Python-based shift planning system that assigns employees to shifts based on rules such as skills, availability, rest time, and workload.
-
 ## Features
 
 * Assigns employees to shifts based on:
@@ -9,113 +5,110 @@ A simple Python-based shift planning system that assigns employees to shifts bas
   * Required skills
   * Maximum number of shifts per employee
   * No double shifts on the same day
-  * Rest time rules (e.g. no Evening → Day, no Night → next day)
+  * Rest time rules
+  * Shift priority
+  * Workload balancing
+  * Personalized employee workload profiles
 
 * Supports:
 
   * Multiple employees per shift
-  * Shift priorities (e.g. critical shifts)
-  * Workload scoring per shift
-  * CSV-based configuration (employees and shifts)
+  * Shift workload scoring
+  * Personalized workload calculations
+  * Personalized risk reporting
+  * Assignment explanation reporting
+  * CSV-based configuration
+  * Pytest-based unit testing
 
 ## Project Structure
 
-```
+```text
 python-shift-planner-desktop/
 │
 ├── app/
-│   ├── main.py          # Entry point
-│   ├── models.py        # Employee and Shift classes
-│   ├── scheduler.py     # Shift assignment logic
-│   ├── reporting.py     # Output/reporting
-│   └── csv_loader.py    # Load data from CSV
+│   ├── main.py
+│   ├── models.py
+│   ├── scheduler.py
+│   ├── reporting.py
+│   ├── csv_loader.py
+│   ├── personalized_workload.py
+│   └── assignment_explanation.py
 │
 ├── data/
 │   ├── employees.csv
-│   └── shifts.csv
+│   ├── shifts.csv
+│   └── employee_profiles.csv
+│
+├── tests/
+│   ├── test_csv_loader.py
+│   ├── test_employee.py
+│   ├── test_scheduler.py
+│   ├── test_shift.py
+│   └── test_personalized_workload.py
 │
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── pytest.ini
 ```
 
 ## How to Run
 
-1. Make sure Python is installed
-2. Navigate to the project folder:
+Run tests:
 
-```
-cd python-shift-planner-desktop
-```
-
-3. Run the program:
-
-```
-python app/main.py
+```powershell
+pytest
 ```
 
-## CSV Format
+Run the application:
 
-### employees.csv
-
-```
-name,max_shifts,skills
-Kris,4,CT;MR
-Anna,4,CT
-Peter,4,MR
-Maria,3,CT;UL
-Jonas,3,MR;UL
+```powershell
+py -m app.main
 ```
 
-### shifts.csv
+## Personalized Employee Profiles
 
-```
-date,shift_type,required_skill,required_staff,priority,workload_score
-2026-05-05,Day,CT,2,2,1
-2026-05-05,Evening,MR,1,2,2
-2026-05-06,Day,CT,2,2,1
-2026-05-06,Evening,MR,1,2,2
-2026-05-07,Day,CT,1,2,1
-2026-05-07,Evening,UL,1,3,2
-2026-05-08,Night,MR,1,1,3
-2026-05-09,Day,MR,1,2,1
-2026-05-09,Day,UL,1,1,1
-2026-05-10,Day,CT,2,2,1
-2026-05-10,Evening,MR,1,2,2
-2026-05-11,Day,UL,1,3,1
-```
+The system supports personalized workload calculations using employee profiles.
 
-## Output
+Example profile settings:
 
-The system prints:
+* Night shift tolerance
+* Evening shift tolerance
+* Weekly workload tolerance
+* Preferred shift type
+
+This allows the system to calculate workload differently per employee.
+
+## Reports
+
+The system generates reports for:
 
 * Assigned shifts
-* Shift count per employee
 * Unassigned shifts
 * Critical unassigned shifts
-* Employee details
-* Employees at capacity
-* High workload employees
-* Workload score report
+* Employee workload
+* Employee risk levels
+* Personalized workload analysis
+* Personalized risk analysis
+* Assignment explanation reporting
 
-## Purpose
+## Assignment Explanation
 
-This project is a foundation for a more advanced shift planning system.
+The scheduler can explain why an employee was assigned to a shift.
 
-The goal is to support:
+Example:
 
-* Better planning decisions
-* Employee well-being (workload balancing)
-* Detection of overload situations
-* Future simulation ("what-if" scenarios)
+* Required skill match
+* Personalized workload score
+* Preferred shift match
+* Eligibility based on scheduling rules
 
-## Next Steps
+## Current Status
 
-* Add GUI (desktop application)
-* Add database (SQLite)
-* Improve scheduling algorithm (fairness + optimization)
-* Add individual employee profiles
-* Add rules based on real-world agreements (e.g. Danish working rules)
+Current version includes:
 
----
+* Rule-based scheduling
+* Personalized workload analysis
+* Explainable assignment reporting
+* Unit-tested scheduling logic
 
-Built as a learning project and stepping stone towards a real-world scheduling system.
+The project is currently a prototype and learning project focused on intelligent and explainable shift planning.
