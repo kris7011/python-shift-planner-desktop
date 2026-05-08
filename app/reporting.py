@@ -226,3 +226,43 @@ def print_personalized_risk_report(
             f"{risk.value} "
             f"(personalized average={average_score:.1f})"
         )
+        
+def print_assignment_explanation_report(shifts, employee_profiles) -> None:
+    print("\nASSIGNMENT EXPLANATION REPORT")
+    print("-" * 40)
+
+    profiles_by_name = {
+        profile.name: profile
+        for profile in employee_profiles
+    }
+
+    for shift in shifts:
+        print(f"\n{shift}")
+
+        if not shift.assigned_employees:
+            print("  No assignment")
+            continue
+
+        for employee in shift.assigned_employees:
+            profile = profiles_by_name.get(str(employee))
+
+            print(f"  Assigned to: {employee}")
+            print(f"  Required skill: {shift.required_skill}")
+            print(f"  Employee skills: {', '.join(employee.skills)}")
+
+            if profile is None:
+                print("  No employee profile found")
+                continue
+
+            personalized_score = calculate_personalized_workload_score(
+                shift,
+                profile,
+            )
+
+            print(f"  Preferred shift: {profile.preferred_shift.value}")
+            print(f"  Personalized score: {personalized_score:.1f}")
+
+            if shift.shift_type == profile.preferred_shift:
+                print("  Reason: shift matches employee preference")
+            else:
+                print("  Reason: employee was eligible and had a suitable score")

@@ -23,6 +23,7 @@ from app.reporting import (
     print_unassigned_report,
     print_personalized_workload_report,
     print_personalized_risk_report,
+    print_assignment_explanation_report,
 )
 
 def main() -> None:
@@ -61,6 +62,7 @@ def main() -> None:
         employee_profiles,
         average_score_threshold=AVERAGE_SCORE_LIMIT,
     )
+    print_assignment_explanation_report(assigned, employee_profiles)
     
 if __name__ == "__main__":
     main()
