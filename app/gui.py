@@ -200,7 +200,10 @@ class ShiftPlannerApp:
             "Unassigned",
             ["Date", "Shift", "Skill", "Missing", "Priority", "Score"],
         )
-        self.risk_output = self.create_tab("Risk Report")
+        self.risk_table = self.create_table_tab(
+            "Risk Report",
+            ["Employee", "Risk", "Average", "Shifts"],
+        )
         self.explanation_output = self.create_tab("Explanations")
 
     def create_file_picker_section(self, root: tk.Tk) -> None:
@@ -299,7 +302,7 @@ class ShiftPlannerApp:
 
             self.populate_assigned_table(shifts)
             self.populate_unassigned_table(shifts)
-            self.set_output(self.risk_output, build_risk_output(employees, employee_profiles))
+            self.populate_risk_table(employees, employee_profiles)
             self.set_output(
                 self.explanation_output,
                 build_explanation_output(shifts, employee_profiles),
@@ -315,9 +318,9 @@ class ShiftPlannerApp:
     def clear_output(self) -> None:
         self.assigned_table.delete(*self.assigned_table.get_children())
         self.unassigned_table.delete(*self.unassigned_table.get_children())
+        self.risk_table.delete(*self.risk_table.get_children())
 
         for output in [
-            self.risk_output,
             self.explanation_output,
         ]:
             output.delete("1.0", tk.END)
@@ -382,6 +385,52 @@ class ShiftPlannerApp:
                     f"{shift.missing_staff_count}/{shift.required_staff}",
                     shift.priority,
                     shift.workload_score,
+                ),
+            )
+            
+    def populate_risk_table(self, employees, employee_profiles) -> None:
+        self.risk_table.delete(*self.risk_table.get_children())
+
+        profiles_by_name = {
+            profile.name: profile
+            for profile in employee_profiles
+        }
+
+        for employee in employees:
+            profile = profiles_by_name.get(str(employee))
+
+            if profile is None:
+                risk = "UNKNOWN"
+                average_score = 0
+            else:
+                total_score = sum(
+                    calculate_personalized_workload_score(shift, profile)
+                    for shift in employee.assigned_shifts
+                )
+
+                shift_count = len(employee.assigned_shifts)
+
+                average_score = (
+                    total_score / shift_count
+                    if shift_count > 0
+                    else 0
+                )
+
+                if average_score >= AVERAGE_SCORE_LIMIT:
+                    risk = "HIGH"
+                elif average_score >= AVERAGE_SCORE_LIMIT * 0.75:
+                    risk = "MEDIUM"
+                else:
+                    risk = "LOW"
+
+            self.risk_table.insert(
+                "",
+                tk.END,
+                values=(
+                    employee.name,
+                    risk,
+                    f"{average_score:.1f}",
+                    employee.assigned_shift_count,
                 ),
             )
 
