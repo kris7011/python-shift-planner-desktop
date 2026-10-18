@@ -1,6 +1,6 @@
 from datetime import date
 
-from app.constants import RiskLevel
+from app.constants import RiskLevel, ShiftType
 from app.models import Employee, EmployeeProfile, Shift
 from app.personalized_workload import calculate_personalized_workload_score
 
@@ -11,7 +11,37 @@ def assign_shifts(
     workload_ratio_threshold: float = 0.75,
     average_score_threshold: float = 2.0,
     high_risk_flag_count: int = 2,
+    historical_shifts_by_employee: dict[str, list[Shift]] | None = None,
+    history_lookback_days: int = 28,
 ) -> list[Shift]:
+    if history_lookback_days < 1:
+        raise ValueError("history_lookback_days must be positive")
+
+    historical = historical_shifts_by_employee or {}
+
+    def historical_penalty(employee: Employee, shift: Shift) -> tuple[int, int]:
+        target_day = date.fromisoformat(shift.date)
+        same_type_count = 0
+        weekend_count = 0
+        is_weekend = target_day.weekday() >= 5
+
+        for past_shift in historical.get(employee.name, []):
+            past_day = date.fromisoformat(past_shift.date)
+            age_days = (target_day - past_day).days
+            if not (0 < age_days <= history_lookback_days):
+                continue
+
+            if (
+                shift.shift_type in (ShiftType.NIGHT, ShiftType.EVENING)
+                and past_shift.shift_type == shift.shift_type
+            ):
+                same_type_count += 1
+
+            if is_weekend and past_day.weekday() >= 5:
+                weekend_count += 1
+
+        return (same_type_count, weekend_count)
+
     risk_mapping = {
         RiskLevel.LOW: 0,
         RiskLevel.MEDIUM: 1,
@@ -60,6 +90,7 @@ def assign_shifts(
                 ],
                 e.assigned_shift_count,
                 personalized_score,
+                historical_penalty(e, shift),
                 e.total_workload_score,
                 len(e.skills),
                 rotating_rank[id(e)],
