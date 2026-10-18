@@ -193,8 +193,7 @@ def test_equal_load_ties_do_not_depend_on_input_order():
         assign_shifts(employees, [shift])
         return shift.assigned_employees[0].name
 
-    assert chosen_name(["Zoe", "Anna"]) == "Anna"
-    assert chosen_name(["Anna", "Zoe"]) == "Anna"
+    assert chosen_name(["Zoe", "Anna"]) == chosen_name(["Anna", "Zoe"])
 
 
 def test_equal_assignment_count_prefers_lower_total_workload():
@@ -216,3 +215,26 @@ def test_equal_assignment_count_prefers_lower_total_workload():
     )
 
     assert next_shift.assigned_employees == [lightly_loaded]
+
+
+def test_equal_priority_ties_rotate_across_consecutive_days():
+    def assigned_name(day):
+        employees = [Employee("Anna", 5, ["CT"]), Employee("Zoe", 5, ["CT"])]
+        shift = Shift(day, ShiftType.DAY, "CT")
+        assign_shifts(employees, [shift])
+        return shift.assigned_employees[0].name
+
+    monday = assigned_name("2026-05-11")
+    tuesday = assigned_name("2026-05-12")
+
+    assert {monday, tuesday} == {"Anna", "Zoe"}
+
+
+def test_rotation_does_not_override_skill_requirements():
+    anna = Employee("Anna", 4, ["MR"])
+    zoe = Employee("Zoe", 4, ["CT"])
+    shift = Shift("2026-05-12", ShiftType.DAY, "CT")
+
+    assign_shifts([anna, zoe], [shift])
+
+    assert shift.assigned_employees == [zoe]
