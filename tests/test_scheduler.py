@@ -238,3 +238,86 @@ def test_rotation_does_not_override_skill_requirements():
     assign_shifts([anna, zoe], [shift])
 
     assert shift.assigned_employees == [zoe]
+
+
+def test_history_fairness_prefers_employee_with_fewer_recent_nights():
+    anna = Employee("Anna", 5, ["CT"])
+    zoe = Employee("Zoe", 5, ["CT"])
+    night = Shift("2026-05-20", ShiftType.NIGHT, "CT")
+
+    assign_shifts(
+        [anna, zoe],
+        [night],
+        historical_shifts_by_employee={
+            "Anna": [Shift("2026-05-13", ShiftType.NIGHT, "CT")],
+            "Zoe": [],
+        },
+    )
+
+    assert night.assigned_employees == [zoe]
+
+
+def test_history_fairness_prefers_fewer_weekends_on_weekend_shifts():
+    anna = Employee("Anna", 5, ["CT"])
+    zoe = Employee("Zoe", 5, ["CT"])
+    sunday = Shift("2026-05-24", ShiftType.DAY, "CT")
+
+    assign_shifts(
+        [anna, zoe],
+        [sunday],
+        historical_shifts_by_employee={
+            "Anna": [Shift("2026-05-17", ShiftType.DAY, "CT")],
+            "Zoe": [],
+        },
+    )
+
+    assert sunday.assigned_employees == [zoe]
+
+
+def test_historical_penalty_excludes_old_and_future_shifts():
+    anna = Employee("Anna", 5, ["CT"])
+    zoe = Employee("Zoe", 5, ["CT"])
+    target = Shift("2026-05-20", ShiftType.NIGHT, "CT")
+
+    with_history = {
+        "Anna": [
+            Shift("2026-03-01", ShiftType.NIGHT, "CT"),
+            Shift("2026-05-27", ShiftType.NIGHT, "CT"),
+        ],
+        "Zoe": [],
+    }
+    # Old and future history is ignored; the result therefore matches
+    # the normal deterministic rotation rather than imposing a penalty.
+    reference = Shift("2026-05-20", ShiftType.NIGHT, "CT")
+    reference_employees = [Employee("Anna", 5, ["CT"]), Employee("Zoe", 5, ["CT"])]
+    assign_shifts(reference_employees, [reference])
+
+    assign_shifts(
+        [anna, zoe],
+        [target],
+        historical_shifts_by_employee=with_history,
+    )
+    assert target.assigned_employees[0].name == reference.assigned_employees[0].name
+
+
+def test_history_does_not_override_skill_eligibility():
+    qualified = Employee("Qualified", 5, ["MR"])
+    other = Employee("Not qualified", 5, ["CT"])
+    night = Shift("2026-05-20", ShiftType.NIGHT, "MR")
+
+    assign_shifts(
+        [qualified, other],
+        [night],
+        historical_shifts_by_employee={
+            "Qualified": [Shift("2026-05-13", ShiftType.NIGHT, "MR")],
+        },
+    )
+
+    assert night.assigned_employees == [qualified]
+
+
+def test_invalid_history_window_is_rejected():
+    import pytest
+
+    with pytest.raises(ValueError, match="history_lookback_days"):
+        assign_shifts([], [], history_lookback_days=0)
