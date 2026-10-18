@@ -58,22 +58,41 @@ class Employee:
         )
 
     def has_required_rest_time(self, shift):
+        new_date = datetime.date.fromisoformat(shift.date)
+
         for assigned_shift in self.assigned_shifts:
-            existing_date = datetime.datetime.strptime(assigned_shift.date, "%Y-%m-%d")
-            new_date = datetime.datetime.strptime(shift.date, "%Y-%m-%d")
+            existing_date = datetime.date.fromisoformat(assigned_shift.date)
 
-            is_next_day = new_date == existing_date + datetime.timedelta(days=1)
-            is_evening_to_day = (
-            assigned_shift.shift_type == ShiftType.EVENING 
-            and shift.shift_type == ShiftType.DAY
+            # A night blocks the following day; an evening blocks the
+            # following morning. Check both orders because shifts are
+            # assigned by priority, not necessarily by chronological date.
+            existing_is_previous_day = (
+                new_date == existing_date + datetime.timedelta(days=1)
             )
-            is_night_before = assigned_shift.shift_type == ShiftType.NIGHT
+            new_is_previous_day = (
+                existing_date == new_date + datetime.timedelta(days=1)
+            )
 
-            if is_next_day and (is_evening_to_day or is_night_before):
+            if existing_is_previous_day and (
+                assigned_shift.shift_type == ShiftType.NIGHT
+                or (
+                    assigned_shift.shift_type == ShiftType.EVENING
+                    and shift.shift_type == ShiftType.DAY
+                )
+            ):
+                return False
+
+            if new_is_previous_day and (
+                shift.shift_type == ShiftType.NIGHT
+                or (
+                    shift.shift_type == ShiftType.EVENING
+                    and assigned_shift.shift_type == ShiftType.DAY
+                )
+            ):
                 return False
 
         return True
-    
+
     def get_risk_flags(self, workload_ratio_threshold: float, average_score_threshold: float) -> list[str]:
         flags = []
         

@@ -100,3 +100,40 @@ def test_employee_cannot_take_two_shifts_on_same_day():
 
     # Assert
     assert result is False, "An employee may not have two shifts on the same date."
+
+def test_employee_cannot_take_evening_before_assigned_next_day():
+    employee = Employee(name="Reverse-Evening", max_shifts=5, skills=["CT"])
+    day_shift = Shift(date="2026-05-12", shift_type=ShiftType.DAY, required_skill="CT")
+    previous_evening = Shift(
+        date="2026-05-11", shift_type=ShiftType.EVENING, required_skill="CT"
+    )
+    employee.assigned_shifts.append(day_shift)
+
+    assert employee.can_take_shift(previous_evening) is False
+    assert "rest time violation" in employee.get_shift_blockers(previous_evening)
+
+
+def test_employee_cannot_take_night_before_assigned_next_day():
+    employee = Employee(name="Reverse-Night", max_shifts=5, skills=["MR"])
+    next_evening = Shift(
+        date="2026-05-12", shift_type=ShiftType.EVENING, required_skill="MR"
+    )
+    previous_night = Shift(
+        date="2026-05-11", shift_type=ShiftType.NIGHT, required_skill="MR"
+    )
+    employee.assigned_shifts.append(next_evening)
+
+    assert employee.can_take_shift(previous_night) is False
+
+
+def test_employee_can_take_day_before_assigned_next_day_evening():
+    employee = Employee(name="Safe-Sequence", max_shifts=5, skills=["CT"])
+    next_evening = Shift(
+        date="2026-05-12", shift_type=ShiftType.EVENING, required_skill="CT"
+    )
+    previous_day = Shift(
+        date="2026-05-11", shift_type=ShiftType.DAY, required_skill="CT"
+    )
+    employee.assigned_shifts.append(next_evening)
+
+    assert employee.can_take_shift(previous_day) is True

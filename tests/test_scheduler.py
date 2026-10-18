@@ -162,3 +162,25 @@ def test_assign_shifts_still_works_without_employee_profiles():
     )
 
     assert employee in shift.assigned_employees
+
+def test_priority_order_does_not_bypass_rest_rules():
+    employee = Employee(name="Priority-Rest", max_shifts=3, skills=["CT"])
+    # Later calendar date has the higher scheduling priority.
+    next_day = Shift(
+        date="2026-05-12",
+        shift_type=ShiftType.DAY,
+        required_skill="CT",
+        priority=1,
+    )
+    previous_night = Shift(
+        date="2026-05-11",
+        shift_type=ShiftType.NIGHT,
+        required_skill="CT",
+        priority=2,
+    )
+
+    assign_shifts([employee], [previous_night, next_day])
+
+    assert employee in next_day.assigned_employees
+    assert previous_night.assigned_employees == []
+    assert employee.assigned_shifts == [next_day]
