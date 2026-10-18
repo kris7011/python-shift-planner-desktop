@@ -184,3 +184,35 @@ def test_priority_order_does_not_bypass_rest_rules():
     assert employee in next_day.assigned_employees
     assert previous_night.assigned_employees == []
     assert employee.assigned_shifts == [next_day]
+
+
+def test_equal_load_ties_do_not_depend_on_input_order():
+    def chosen_name(order):
+        employees = [Employee(name, 4, ["CT"]) for name in order]
+        shift = Shift("2026-05-11", ShiftType.DAY, "CT")
+        assign_shifts(employees, [shift])
+        return shift.assigned_employees[0].name
+
+    assert chosen_name(["Zoe", "Anna"]) == "Anna"
+    assert chosen_name(["Anna", "Zoe"]) == "Anna"
+
+
+def test_equal_assignment_count_prefers_lower_total_workload():
+    lightly_loaded = Employee("Light", 5, ["CT"])
+    heavily_loaded = Employee("Heavy", 5, ["CT"])
+    lightly_loaded.assigned_shifts.append(
+        Shift("2026-05-09", ShiftType.DAY, "CT", workload_score=1)
+    )
+    heavily_loaded.assigned_shifts.append(
+        Shift("2026-05-09", ShiftType.DAY, "CT", workload_score=3)
+    )
+    next_shift = Shift("2026-05-11", ShiftType.DAY, "CT")
+
+    assign_shifts(
+        [heavily_loaded, lightly_loaded],
+        [next_shift],
+        workload_ratio_threshold=2.0,
+        average_score_threshold=99.0,
+    )
+
+    assert next_shift.assigned_employees == [lightly_loaded]
