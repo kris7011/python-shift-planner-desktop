@@ -1,3 +1,5 @@
+from datetime import date
+
 from app.constants import RiskLevel
 from app.models import Employee, EmployeeProfile, Shift
 from app.personalized_workload import calculate_personalized_workload_score
@@ -26,6 +28,20 @@ def assign_shifts(
     for shift in sorted_shifts:
         eligible = [e for e in employees if e.can_take_shift(shift)]
 
+        # Rotate only the final tie-breaker: risk, workload, preferences and
+        # skill flexibility always take precedence. This avoids repeatedly
+        # picking the first alphabetical name for otherwise equal shifts.
+        names_in_order = sorted(eligible, key=lambda e: (e.name.casefold(), e.name))
+        start_index = (
+            (date.fromisoformat(shift.date) - date(1970, 1, 1)).days
+            % len(names_in_order)
+            if names_in_order else 0
+        )
+        rotating_rank = {
+            id(employee): (index - start_index) % len(names_in_order)
+            for index, employee in enumerate(names_in_order)
+        }
+
         def sort_key(e: Employee):
             profile = profiles_by_name.get(e.name)
 
@@ -46,8 +62,7 @@ def assign_shifts(
                 personalized_score,
                 e.total_workload_score,
                 len(e.skills),
-                e.name.casefold(),
-                e.name,
+                rotating_rank[id(e)],
             )
 
         sorted_employees = sorted(eligible, key=sort_key)
