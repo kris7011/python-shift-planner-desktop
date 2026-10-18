@@ -44,7 +44,10 @@ def assign_shifts(
                 ],
                 e.assigned_shift_count,
                 personalized_score,
+                e.total_workload_score,
                 len(e.skills),
+                e.name.casefold(),
+                e.name,
             )
 
         sorted_employees = sorted(eligible, key=sort_key)
