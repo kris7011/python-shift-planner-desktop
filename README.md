@@ -43,6 +43,10 @@ The system is inspired by real-world healthcare scheduling challenges in 24/7 de
 - Interactive tables
 - Shift explanation viewer
 - Report export to `.txt`
+- Editable calendar (dates × day/evening/night) with staffing status per shift
+- Manual add, remove and replace of employees, checked by the scheduler's own rules
+- Undo of manual changes (button or Ctrl+Z) with a change history
+- PDF export of the current, possibly edited, schedule
 
 ### Assignment Transparency
 
@@ -57,9 +61,23 @@ The system explains WHY employees were assigned:
 
 # Screenshots
 
-## Main GUI
+## Editable calendar
 
-_Add screenshot here later_
+A change that breaks a scheduling rule is refused with every reason (here Jonas is at capacity and would get too little rest after an evening shift):
+
+![Refused change in the calendar](docs/images/calendar-rule-refused.png)
+
+After replacing Jonas with Peter on Sunday evening, Jonas can take Monday's open UL shift. The history lists both changes:
+
+![Edited calendar with change history](docs/images/calendar-edited.png)
+
+Undo (button or Ctrl+Z) reverts the latest change exactly:
+
+![Calendar after undo](docs/images/calendar-undo.png)
+
+## PDF export
+
+![First page of the exported PDF](docs/images/pdf-export.png)
 
 ---
 
@@ -67,6 +85,7 @@ _Add screenshot here later_
 
 - Python 3.12
 - Tkinter
+- ReportLab (PDF export)
 - Pytest
 - CSV-based data import
 
@@ -79,6 +98,9 @@ python-shift-planner-desktop/
 │
 ├── app/
 │   ├── gui.py
+│   ├── calendar_view.py
+│   ├── schedule_editor.py
+│   ├── pdf_export.py
 │   ├── main.py
 │   ├── scheduler.py
 │   ├── models.py
@@ -138,6 +160,20 @@ Run tests:
 pytest
 ```
 
+## Editing the schedule
+
+1. Click **Kør vagtplan** to generate the schedule from the CSV files.
+2. Open the **Kalender** tab and click a shift. Green shifts are fully staffed, red shifts miss people, blue is selected.
+3. Choose an employee and click **Tilføj**, select someone on the shift and click **Fjern valgte**, or select both and click **Erstat valgte**. The list shows every employee; those who cannot take the shift show why.
+4. Every change is checked with the same rules as the scheduler: required skill, maximum number of shifts, one shift per day, and rest time (no shift the day after a night, no day shift after an evening). A refused change shows all reasons and changes nothing.
+5. **Fortryd (Ctrl+Z)** reverts the latest change. The other tabs (assigned, unassigned, risk, explanations) update after every change.
+
+Changes live in memory only: **the CSV files are never written**. Clicking **Kør vagtplan** again rebuilds the plan from the CSV files and asks first if there are manual changes.
+
+## PDF export
+
+**Eksportér PDF** saves the current schedule: period, print time, number of manual changes, every shift with its staff (shifts missing people are highlighted) and each employee's shifts and workload. The save dialog asks before replacing an existing file. The PDF is written to a temporary file first and then moved into place, so a failed export never damages an existing file.
+
 ---
 
 # CSV Data Format
@@ -177,6 +213,9 @@ employee_id,name,night_tolerance,weekend_tolerance,late_tolerance,max_weekly_loa
 - GUI reporting
 - Report export
 - Interactive explanations
+- Editable calendar with rule-checked manual changes
+- Undo of manual changes
+- PDF export
 
 ---
 
@@ -184,11 +223,10 @@ employee_id,name,night_tolerance,weekend_tolerance,late_tolerance,max_weekly_loa
 
 - SQLite database
 - Drag-and-drop scheduling
-- Calendar view
+- Saving an edited schedule (today edits are kept in memory and exported as PDF)
 - Fairness optimization
 - AI-assisted scheduling
 - What-if simulations
-- PDF export
 - Employee preference management
 - Real-world agreement rules
 
@@ -205,6 +243,11 @@ Current coverage includes:
 - CSV loading
 - Personalized workload scoring
 - Scheduler behavior
+- Schedule editing: add, remove and replace through the scheduler's rules, refused changes leaving the schedule untouched, and undo restoring the exact earlier state (including order)
+- Calendar grouping by date and shift type
+- PDF export: content, no overwrite without permission, an existing file kept when an export fails, and input CSV files unchanged after editing and exporting
+
+The GUI itself (`calendar_view.py`, `gui.py`) is not covered by automated tests; its rules and state live in `schedule_editor.py`, which is. See [docs/PROJECT_WALKTHROUGH.md](docs/PROJECT_WALKTHROUGH.md) for the desktop demonstration.
 
 ---
 
