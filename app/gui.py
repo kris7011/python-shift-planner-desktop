@@ -1,5 +1,8 @@
 import tkinter as tk
+from datetime import datetime
 from tkinter import filedialog, messagebox, scrolledtext, ttk
+
+from app.calendar_view import CalendarView
 
 from app.config import (
     WORKLOAD_RATIO_LIMIT,
@@ -14,6 +17,8 @@ from app.csv_loader import (
     load_shifts_from_csv,
     load_employee_profiles_from_csv,
 )
+from app.pdf_export import export_schedule_pdf
+from app.schedule_editor import ScheduleEditor
 from app.scheduler import assign_shifts
 from app.personalized_workload import calculate_personalized_workload_score
 
@@ -148,7 +153,7 @@ class ShiftPlannerApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Vagtplanlægning")
-        self.root.geometry("1150x800")
+        self.root.geometry("1250x820")
 
         self.employees_path = tk.StringVar(value=EMPLOYEES_CSV_PATH)
         self.shifts_path = tk.StringVar(value=SHIFTS_CSV_PATH)
@@ -156,6 +161,8 @@ class ShiftPlannerApp:
         
         self.current_shifts = []
         self.current_profiles = []
+        self.current_employees = []
+        self.editor: ScheduleEditor | None = None
 
         title = tk.Label(
             root,
@@ -200,8 +207,29 @@ class ShiftPlannerApp:
         )
         export_button.pack(side=tk.LEFT, padx=5)
 
+        pdf_button = tk.Button(
+            button_frame,
+            text="Eksportér PDF",
+            command=self.export_pdf,
+            width=20,
+        )
+        pdf_button.pack(side=tk.LEFT, padx=5)
+
+        self.undo_button = tk.Button(
+            button_frame,
+            text="Fortryd (Ctrl+Z)",
+            command=self.undo_last_edit,
+            width=20,
+            state=tk.DISABLED,
+        )
+        self.undo_button.pack(side=tk.LEFT, padx=5)
+        root.bind_all("<Control-z>", lambda event: self.undo_last_edit())
+
         self.tabs = ttk.Notebook(root)
         self.tabs.pack(expand=True, fill="both", padx=10, pady=10)
+
+        self.calendar = CalendarView(self.tabs, on_change=self.refresh_after_edit)
+        self.tabs.add(self.calendar, text="Kalender")
 
         self.assigned_table = self.create_table_tab(
             "Tildelte vagter",
@@ -306,6 +334,16 @@ class ShiftPlannerApp:
         return output
 
     def run_scheduler(self) -> None:
+        if self.editor is not None and self.editor.edit_count > 0:
+            confirmed = messagebox.askyesno(
+                "Kør vagtplan igen?",
+                f"Vagtplanen bygges forfra fra CSV-filerne, og dine {self.editor.edit_count} "
+                "manuelle ændringer går tabt. Fortsæt?",
+            )
+
+            if not confirmed:
+                return
+
         try:
             employees, shifts, employee_profiles = load_schedule_data(
                 employees_path=self.employees_path.get(),
@@ -315,17 +353,31 @@ class ShiftPlannerApp:
 
             self.current_shifts = shifts
             self.current_profiles = employee_profiles
+            self.current_employees = employees
 
-            self.populate_assigned_table(shifts)
-            self.populate_unassigned_table(shifts)
-            self.populate_risk_table(employees, employee_profiles)
-            self.set_output(
-                self.explanation_output,
-                build_explanation_output(shifts, employee_profiles),
-            )
+            # Edits only change the schedule in memory; the CSV files are never written.
+            self.editor = ScheduleEditor(employees, shifts)
+            self.calendar.load(self.editor)
+            self.refresh_after_edit()
 
         except Exception as error:
             messagebox.showerror("Error", str(error))
+
+    def refresh_after_edit(self) -> None:
+        """Shows the current, possibly edited, schedule in every tab."""
+        self.populate_assigned_table(self.current_shifts)
+        self.populate_unassigned_table(self.current_shifts)
+        self.populate_risk_table(self.current_employees, self.current_profiles)
+        self.set_output(
+            self.explanation_output,
+            build_explanation_output(self.current_shifts, self.current_profiles),
+        )
+        self.undo_button.configure(
+            state=tk.NORMAL if self.editor is not None and self.editor.can_undo else tk.DISABLED
+        )
+
+    def undo_last_edit(self) -> None:
+        self.calendar.undo()
 
     def set_output(self, output, text: str) -> None:
         output.delete("1.0", tk.END)
@@ -334,6 +386,10 @@ class ShiftPlannerApp:
     def clear_output(self) -> None:
         self.current_shifts = []
         self.current_profiles = []
+        self.current_employees = []
+        self.editor = None
+        self.calendar.clear()
+        self.undo_button.configure(state=tk.DISABLED)
 
         self.assigned_table.delete(*self.assigned_table.get_children())
         self.unassigned_table.delete(*self.unassigned_table.get_children())
@@ -533,6 +589,39 @@ class ShiftPlannerApp:
 
         messagebox.showinfo("Export complete", f"Report saved to:\n{selected_file}")
         
+    def export_pdf(self) -> None:
+        if not self.current_shifts:
+            messagebox.showinfo("Ingen data", "Kør vagtplanen før du eksporterer en PDF.")
+            return
+
+        dates = sorted(shift.date for shift in self.current_shifts)
+        selected_file = filedialog.asksaveasfilename(
+            title="Gem vagtplan som PDF",
+            defaultextension=".pdf",
+            initialfile=f"vagtplan-{dates[0]}-{dates[-1]}.pdf",
+            filetypes=[("PDF-filer", "*.pdf")],
+            # The dialog asks before an existing file is replaced.
+            confirmoverwrite=True,
+        )
+
+        if not selected_file:
+            return
+
+        try:
+            path = export_schedule_pdf(
+                selected_file,
+                self.current_shifts,
+                self.current_employees,
+                generated_at=datetime.now(),
+                manual_edit_count=self.editor.edit_count if self.editor else 0,
+                overwrite=True,
+            )
+        except (OSError, ValueError) as error:
+            messagebox.showerror("PDF kunne ikke gemmes", str(error))
+            return
+
+        messagebox.showinfo("PDF gemt", f"Vagtplanen er gemt som:\n{path}")
+
     def build_current_risk_report_text(self) -> str:
         lines = ["PERSONALIZED RISK REPORT", "=" * 50]
 
